@@ -382,7 +382,12 @@ export default function App() {
                 <div className="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                   <HardDrive className="w-4 h-4" />
                 </div>
-                <span className="font-black text-sm text-white tracking-wide">FileDockPro</span>
+                <span className="font-black text-sm text-white tracking-wide flex items-center gap-1">
+                  FileDock
+                  <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold px-1 py-0.2 rounded uppercase">
+                    PRO
+                  </span>
+                </span>
                 <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
                   Shared Download
                 </span>
@@ -407,7 +412,7 @@ export default function App() {
           </main>
 
           <footer className="border-t border-zinc-800/80 py-6 text-center text-xs text-zinc-500">
-            <p>© {new Date().getFullYear()} FileDockPro. Secure Real-Time File Hosting Platform.</p>
+            <p>© {new Date().getFullYear()} FileDock. Secure Real-Time File Hosting Platform.</p>
           </footer>
 
           <AuthModal
@@ -438,7 +443,12 @@ export default function App() {
                 <div className="w-8 h-8 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
                   <HardDrive className="w-4 h-4" />
                 </div>
-                <span className="font-black text-sm text-white tracking-wide">FileDockPro</span>
+                <span className="font-black text-sm text-white tracking-wide flex items-center gap-1">
+                  FileDock
+                  <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold px-1 py-0.2 rounded uppercase">
+                    PRO
+                  </span>
+                </span>
               </div>
               <button
                 type="button"
@@ -728,7 +738,7 @@ export default function App() {
                 </div>
               </div>
               <a
-                href={`https://wa.me/${(siteSettings?.whatsappNumber || '+918811896374').replace(/[^0-9]/g, '')}?text=Hello%20FileDockPro%20Support`}
+                href={`https://wa.me/${(siteSettings?.whatsappNumber || '+918811896374').replace(/[^0-9]/g, '')}?text=Hello%20FileDock%20Support`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs rounded-xl shadow-md transition shrink-0 flex items-center gap-1 cursor-pointer whitespace-nowrap"
@@ -954,7 +964,7 @@ export default function App() {
 
       {/* Floating WhatsApp Support Button */}
       <a
-        href={`https://wa.me/${(siteSettings?.whatsappNumber || '+918811896374').replace(/[^0-9]/g, '')}?text=Hello%20FileDockPro%20Support`}
+        href={`https://wa.me/${(siteSettings?.whatsappNumber || '+918811896374').replace(/[^0-9]/g, '')}?text=Hello%20FileDock%20Support`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-20 right-4 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white px-3.5 py-2.5 rounded-full shadow-xl shadow-emerald-950/60 font-bold text-xs transition-all transform hover:scale-105 active:scale-95 cursor-pointer border border-emerald-400/40"

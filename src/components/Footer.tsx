@@ -19,8 +19,8 @@ export const Footer: React.FC<FooterProps> = ({ totalFiles, totalDownloads, onOp
               <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
                 <HardDriveUpload className="w-5 h-5" />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">
-                FileDock<span className="text-indigo-400">Pro</span>
+              <span className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
+                FileDock <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold uppercase">PRO</span>
               </span>
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed">
@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ totalFiles, totalDownloads, onOp
             <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider">Legal & Compliance</h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <a href="#dmca" onClick={(e) => { e.preventDefault(); alert('DMCA Policy: FileDockPro respects intellectual property rights. Contact admin@filedockpro.com for copyright takedown requests.'); }} className="hover:text-indigo-400 transition flex items-center gap-1.5">
+                <a href="#dmca" onClick={(e) => { e.preventDefault(); alert('DMCA Policy: FileDock respects intellectual property rights. Contact admin@filedock.com for copyright takedown requests.'); }} className="hover:text-indigo-400 transition flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-indigo-400" /> DMCA Takedown Policy
                 </a>
               </li>
@@ -97,7 +97,7 @@ export const Footer: React.FC<FooterProps> = ({ totalFiles, totalDownloads, onOp
         </div>
 
         <div className="pt-8 mt-8 border-t border-zinc-900 text-center text-xs text-zinc-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© {new Date().getFullYear()} FileDockPro Inc. All rights reserved. Production File Storage Engine.</p>
+          <p>© {new Date().getFullYear()} FileDock Inc. All rights reserved. Production File Storage Engine.</p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1 text-emerald-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Live Server Online

@@ -1704,7 +1704,7 @@ export const api = {
       return snap.data() as WebsiteSettings;
     }
     const defaults: WebsiteSettings = {
-      siteName: 'FileDockPro',
+      siteName: 'FileDock',
       siteDescription: 'Real-time cloud file sharing platform',
       maxUploadSizeMb: 1024,
       allowedExtensions: ['*'],
@@ -1720,7 +1720,7 @@ export const api = {
       theme: 'dark',
       whatsappNumber: '+918811896374',
       telegramChannelUrl: 'https://t.me/+cOVh2XrT7nBlYTE1',
-      supportEmail: 'support@filedockpro.com',
+      supportEmail: 'support@filedock.com',
     };
     await setDoc(doc(db, 'settings', 'global'), defaults);
     return defaults;

@@ -82,7 +82,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
             <div>
               <h1 className="font-extrabold text-xs text-white tracking-tight">Admin Console</h1>
-              <p className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">FileDockPro OS</p>
+              <p className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">FileDock PRO</p>
             </div>
           </div>
 
@@ -184,7 +184,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
               <div>
                 <h1 className="font-extrabold text-sm text-white tracking-tight">Admin Console</h1>
-                <p className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">FileDockPro OS</p>
+                <p className="text-[10px] text-purple-300 font-bold uppercase tracking-wider">FileDock PRO</p>
               </div>
             </div>
           </div>

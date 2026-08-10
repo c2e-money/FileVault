@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [showSearch, setShowSearch] = useState(false);
 
-  const siteTitle = siteSettings?.siteName || 'FileDockPro';
+  const siteTitle = siteSettings?.siteName || 'FileDock';
 
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 px-2.5 sm:px-4 py-2.5 sm:py-3 transition-colors overflow-hidden max-w-full">
@@ -77,7 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1">
               {siteTitle}
               <span className="text-[8px] sm:text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold px-1 py-0.2 rounded uppercase">
-                App
+                PRO
               </span>
             </span>
           </div>

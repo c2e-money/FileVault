@@ -20,7 +20,7 @@
     }
   ],
   "passwords": {
-    "usr-admin-1": "$2b$10$g7DARJNBaXVHs92a0IUgy.o/38PewiuZNHbv5VzrRhdBd5FhPJPxK",
+    "usr-admin-1": "$2b$10$qFDxXRENrO7DMttpxK8RY.Q5fv3mBcJa1xIKcZFthJGsUF/AxcGQS",
     "usr-regular-1": "$2b$10$iJe.J7SezHF4l87ojsJ9oueFctsSQuEIXmANgP42gTYZs2oB.7sTm"
   },
   "files": [
@@ -319,14 +319,14 @@
       "id": "notif-1",
       "userId": "usr-admin-1",
       "title": "System Initialized",
-      "message": "FileVault database and file storage initialized successfully.",
+      "message": "FileDock database and file storage initialized successfully.",
       "isRead": false,
       "type": "info",
       "createdAt": "2026-07-24T18:27:39.006Z"
     }
   ],
   "settings": {
-    "siteName": "FileVault",
+    "siteName": "FileDock",
     "siteDescription": "High-Speed Secure File Upload, Cloud Storage, & Public File Sharing Platform.",
     "maxUploadSizeMb": 500,
     "allowedExtensions": [
@@ -357,8 +357,14 @@
     "currencySymbol": "$",
     "analyticsCode": "",
     "maintenanceMode": false,
-    "headerNotice": "⚡ Welcome to FileVault! High-speed, secure file hosting with direct resume downloads.",
-    "theme": "dark"
+    "headerNotice": "⚡ Welcome to FileDock! High-speed, secure file hosting with direct resume downloads.",
+    "theme": "dark",
+    "whatsappNumber": "+918811896374",
+    "telegramChannelUrl": "https://t.me/+cOVh2XrT7nBlYTE1",
+    "supportEmail": "support@filedock.com",
+    "githubToken": "",
+    "githubRepo": "",
+    "githubTag": "uploads"
   },
   "activityLogs": [
     {

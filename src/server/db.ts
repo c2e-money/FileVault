@@ -123,7 +123,7 @@ const defaultAds: Advertisement[] = [
 ];
 
 const defaultSettings: WebsiteSettings = {
-  siteName: 'FileDockPro',
+  siteName: 'FileDock',
   siteDescription: 'High-Speed Secure File Upload, Cloud Storage, & Public File Sharing Platform.',
   maxUploadSizeMb: 500,
   allowedExtensions: ['zip', 'rar', '7z', 'pdf', 'docx', 'xlsx', 'pptx', 'mp3', 'mp4', 'apk', 'exe', 'iso', 'png', 'jpg', 'svg', 'txt', 'csv', 'json'],
@@ -135,11 +135,11 @@ const defaultSettings: WebsiteSettings = {
   currencySymbol: '$',
   analyticsCode: '',
   maintenanceMode: false,
-  headerNotice: '⚡ Welcome to FileDockPro! High-speed, secure file hosting with direct resume downloads.',
+  headerNotice: '⚡ Welcome to FileDock! High-speed, secure file hosting with direct resume downloads.',
   theme: 'dark',
   whatsappNumber: '+918811896374',
   telegramChannelUrl: 'https://t.me/+cOVh2XrT7nBlYTE1',
-  supportEmail: 'support@filedockpro.com',
+  supportEmail: 'support@filedock.com',
   githubToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
   githubRepo: process.env.GITHUB_REPO || '',
   githubTag: process.env.GITHUB_TAG || 'uploads',
@@ -243,11 +243,11 @@ class Database {
         passwordsDict[adminUser.id] = bcrypt.hashSync(envAdminPassword, 10);
 
         const loadedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
-        if (!loadedSettings.siteName || loadedSettings.siteName === 'FileVault') {
-          loadedSettings.siteName = 'FileDockPro';
+        if (!loadedSettings.siteName || loadedSettings.siteName === 'FileVault' || loadedSettings.siteName === 'FileDockPro') {
+          loadedSettings.siteName = 'FileDock';
         }
-        if (loadedSettings.headerNotice?.includes('FileVault')) {
-          loadedSettings.headerNotice = loadedSettings.headerNotice.replace(/FileVault/g, 'FileDockPro');
+        if (loadedSettings.headerNotice?.includes('FileVault') || loadedSettings.headerNotice?.includes('FileDockPro')) {
+          loadedSettings.headerNotice = loadedSettings.headerNotice.replace(/FileVault|FileDockPro/g, 'FileDock');
         }
 
         const loadedData: DatabaseSchema = {

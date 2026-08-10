@@ -950,7 +950,7 @@ async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, 
     const safeName = file?.originalName || file?.filename || (idOrFilename.includes('.') ? idOrFilename : `${idOrFilename}.bin`);
     const fallbackPath = path.join(UPLOADS_DIR, `file-${file?.id || 'dl'}-${path.basename(safeName)}`);
     if (!fs.existsSync(fallbackPath)) {
-      const dummyContent = `FileDockPro Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${file?.id || idOrFilename}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
+      const dummyContent = `FileDock Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${file?.id || idOrFilename}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
       fs.writeFileSync(fallbackPath, dummyContent);
     }
     resolvedFilePath = fallbackPath;
@@ -1635,7 +1635,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 FileDockPro Express server listening on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 FileDock Express server listening on http://0.0.0.0:${PORT}`);
   });
 }
 

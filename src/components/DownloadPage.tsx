@@ -486,7 +486,7 @@ export const DownloadPage: React.FC<DownloadPageProps> = ({
 
         {/* Mobile Footer */}
         <footer className="border-t border-zinc-800/80 py-4 text-center text-[11px] text-zinc-500">
-          <p>© {new Date().getFullYear()} FileDockPro. Secure Real-Time Hosting.</p>
+          <p>© {new Date().getFullYear()} FileDock. Secure Real-Time Hosting.</p>
         </footer>
 
         {/* Sticky Bottom Adsterra Advertisement Bar */}
