@@ -773,7 +773,7 @@ const handleGitHubStatus = async (req: AuthRequest, res: Response) => {
 app.get('/api/admin/github-status', handleGitHubStatus);
 app.post('/api/admin/github-status', handleGitHubStatus);
 
-// Register File Download Count (Increments on every download)
+// Register File Download Count (Increments on every download with 60s deduplication per client)
 function registerFileDownload(file: any, req: AuthRequest) {
   const database = db.getDb();
   const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || (req.headers['x-real-ip'] as string) || req.ip || req.socket.remoteAddress || '127.0.0.1';
@@ -783,6 +783,25 @@ function registerFileDownload(file: any, req: AuthRequest) {
   const visitorId = (req.headers['x-visitor-id'] as string) || (req.query.visitorId as string) || (req.body?.visitorId as string);
 
   const fileKey = file.id || file.filename;
+
+  // Deduplication check: check if this user/visitor/IP downloaded this file in the last 60 seconds
+  const now = Date.now();
+  const recentDownload = database.downloads.find((d: any) => {
+    const isSameFile = d.fileId === fileKey || d.fileId === file.id || d.fileId === file.filename;
+    if (!isSameFile) return false;
+
+    const matchesClient = (userId && d.userId === userId) ||
+                          (visitorId && d.visitorId === visitorId) ||
+                          (clientIp && d.ipAddress === clientIp);
+    if (!matchesClient) return false;
+
+    const timeDiff = now - new Date(d.downloadedAt).getTime();
+    return timeDiff >= 0 && timeDiff < 60000;
+  });
+
+  if (recentDownload) {
+    return { incremented: false, downloadsCount: file.downloadsCount || 0, ipAddress: clientIp, duplicate: true };
+  }
 
   file.downloadsCount = (file.downloadsCount || 0) + 1;
   database.downloads.unshift({
@@ -931,7 +950,7 @@ async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, 
     const safeName = file?.originalName || file?.filename || (idOrFilename.includes('.') ? idOrFilename : `${idOrFilename}.bin`);
     const fallbackPath = path.join(UPLOADS_DIR, `file-${file?.id || 'dl'}-${path.basename(safeName)}`);
     if (!fs.existsSync(fallbackPath)) {
-      const dummyContent = `FileVault Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${file?.id || idOrFilename}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
+      const dummyContent = `FileDockPro Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${file?.id || idOrFilename}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
       fs.writeFileSync(fallbackPath, dummyContent);
     }
     resolvedFilePath = fallbackPath;
@@ -1616,7 +1635,7 @@ async function start() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 FileVault Express server listening on http://0.0.0.0:${PORT}`);
+    console.log(`🚀 FileDockPro Express server listening on http://0.0.0.0:${PORT}`);
   });
 }
 

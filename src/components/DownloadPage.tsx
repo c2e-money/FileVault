@@ -169,9 +169,15 @@ export const DownloadPage: React.FC<DownloadPageProps> = ({
     }
   };
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
   // Trigger File Download & Increment Real-time Download Count (1 download per IP)
   const handleDownloadClick = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (isDownloading) return;
+
+    setIsDownloading(true);
+    setTimeout(() => setIsDownloading(false), 3000);
 
     triggerSmartLink();
 
@@ -480,7 +486,7 @@ export const DownloadPage: React.FC<DownloadPageProps> = ({
 
         {/* Mobile Footer */}
         <footer className="border-t border-zinc-800/80 py-4 text-center text-[11px] text-zinc-500">
-          <p>© {new Date().getFullYear()} FileVault. Secure Real-Time Hosting.</p>
+          <p>© {new Date().getFullYear()} FileDockPro. Secure Real-Time Hosting.</p>
         </footer>
 
         {/* Sticky Bottom Adsterra Advertisement Bar */}

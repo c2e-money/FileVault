@@ -46,7 +46,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOpen,
   onClose,
   user,
-  quotaBytes = 5 * 1024 * 1024 * 1024, // 5 GB default quota
+  quotaBytes = Infinity, // Unlimited default quota
   onLogout,
   onSelectFile,
   onOpenQRCode,
@@ -194,22 +194,24 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <Database className="w-3.5 h-3.5 text-purple-400" /> Storage Used
                     </span>
                     <span className="text-[11px] font-bold text-zinc-300">
-                      {formatBytes(usedBytes)} <span className="text-zinc-500">/ {formatBytes(quotaBytes)}</span>
+                      {formatBytes(usedBytes)} <span className="text-emerald-400 font-extrabold">/ Unlimited</span>
                     </span>
                   </div>
 
                   <div className="w-full bg-zinc-950 border border-zinc-800 rounded-full h-3 p-0.5 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-purple-500 rounded-full transition-all duration-500"
                       style={{
-                        width: usedBytes > 0 ? `${Math.max(percentageVal, 3)}%` : '0%',
+                        width: usedBytes > 0 ? '100%' : '5%',
                       }}
                     />
                   </div>
 
                   <div className="flex justify-between items-center text-[10px] text-zinc-500">
                     <span>Cloud Quota</span>
-                    <span className="font-bold text-indigo-400">{percentageFormatted}% used</span>
+                    <span className="font-bold text-emerald-400 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" /> Unlimited Storage Active (0$ Cap)
+                    </span>
                   </div>
                 </div>
               </div>

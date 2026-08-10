@@ -48,7 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [showSearch, setShowSearch] = useState(false);
 
-  const siteTitle = siteSettings?.siteName || 'FileVault';
+  const siteTitle = siteSettings?.siteName || 'FileDockPro';
 
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800/80 px-2.5 sm:px-4 py-2.5 sm:py-3 transition-colors overflow-hidden max-w-full">

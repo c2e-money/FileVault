@@ -17,7 +17,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const siteTitle = settings?.siteName || 'FileVault';
+  const siteTitle = settings?.siteName || 'FileDockPro';
   const whatsappNum = settings?.whatsappNumber || '+918811896374';
   const cleanWhatsapp = whatsappNum.replace(/[^0-9]/g, '');
   const telegramUrl = settings?.telegramChannelUrl || 'https://t.me/+cOVh2XrT7nBlYTE1';

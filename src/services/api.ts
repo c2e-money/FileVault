@@ -1136,9 +1136,20 @@ export const api = {
   },
 
   async incrementDownloadCount(id: string, filename?: string): Promise<{ incremented: boolean; downloadsCount?: number }> {
+    const now = Date.now();
+    const lastTime = (window as any)._recentDlMap?.get(id) || 0;
+    if (!(window as any)._recentDlMap) (window as any)._recentDlMap = new Map<string, number>();
+
+    if (now - lastTime < 10000) {
+      // Client-side deduplication within 10 seconds
+      return { incremented: false };
+    }
+    (window as any)._recentDlMap.set(id, now);
+
     const visitorId = this.getVisitorId();
     let isServerIncremented = true;
     let newServerCount: number | undefined = undefined;
+    let wasIncrementedOnServer = true;
 
     try {
       const currentUser = await this.getCurrentUser();
@@ -1159,6 +1170,9 @@ export const api = {
         const data = await res.json();
         if (data.downloadsCount !== undefined) {
           newServerCount = data.downloadsCount;
+        }
+        if (data.incremented === false || data.duplicate === true) {
+          wasIncrementedOnServer = false;
         }
       }
     } catch (e) {
@@ -1185,7 +1199,7 @@ export const api = {
           downloadsCount: newServerCount,
           updatedAt: new Date().toISOString(),
         }).catch(() => null);
-      } else {
+      } else if (wasIncrementedOnServer) {
         await updateDoc(targetRef, {
           downloadsCount: increment(1),
           updatedAt: new Date().toISOString(),
@@ -1202,7 +1216,7 @@ export const api = {
     } catch {}
 
     await this.logActivity('file_download', `File downloaded (ID: ${id})`).catch(() => null);
-    return { incremented: true, downloadsCount: newServerCount };
+    return { incremented: wasIncrementedOnServer, downloadsCount: newServerCount };
   },
 
   async getQRCode(id: string): Promise<{ qrCode: string; url: string }> {
@@ -1690,7 +1704,7 @@ export const api = {
       return snap.data() as WebsiteSettings;
     }
     const defaults: WebsiteSettings = {
-      siteName: 'FileVault',
+      siteName: 'FileDockPro',
       siteDescription: 'Real-time cloud file sharing platform',
       maxUploadSizeMb: 1024,
       allowedExtensions: ['*'],
@@ -1706,7 +1720,7 @@ export const api = {
       theme: 'dark',
       whatsappNumber: '+918811896374',
       telegramChannelUrl: 'https://t.me/+cOVh2XrT7nBlYTE1',
-      supportEmail: 'support@filevault.com',
+      supportEmail: 'support@filedockpro.com',
     };
     await setDoc(doc(db, 'settings', 'global'), defaults);
     return defaults;

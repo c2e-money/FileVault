@@ -123,7 +123,7 @@ const defaultAds: Advertisement[] = [
 ];
 
 const defaultSettings: WebsiteSettings = {
-  siteName: 'FileVault',
+  siteName: 'FileDockPro',
   siteDescription: 'High-Speed Secure File Upload, Cloud Storage, & Public File Sharing Platform.',
   maxUploadSizeMb: 500,
   allowedExtensions: ['zip', 'rar', '7z', 'pdf', 'docx', 'xlsx', 'pptx', 'mp3', 'mp4', 'apk', 'exe', 'iso', 'png', 'jpg', 'svg', 'txt', 'csv', 'json'],
@@ -135,11 +135,11 @@ const defaultSettings: WebsiteSettings = {
   currencySymbol: '$',
   analyticsCode: '',
   maintenanceMode: false,
-  headerNotice: '⚡ Welcome to FileVault! High-speed, secure file hosting with direct resume downloads.',
+  headerNotice: '⚡ Welcome to FileDockPro! High-speed, secure file hosting with direct resume downloads.',
   theme: 'dark',
   whatsappNumber: '+918811896374',
   telegramChannelUrl: 'https://t.me/+cOVh2XrT7nBlYTE1',
-  supportEmail: 'support@filevault.com',
+  supportEmail: 'support@filedockpro.com',
   githubToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
   githubRepo: process.env.GITHUB_REPO || '',
   githubTag: process.env.GITHUB_TAG || 'uploads',
@@ -242,6 +242,14 @@ class Database {
         }
         passwordsDict[adminUser.id] = bcrypt.hashSync(envAdminPassword, 10);
 
+        const loadedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+        if (!loadedSettings.siteName || loadedSettings.siteName === 'FileVault') {
+          loadedSettings.siteName = 'FileDockPro';
+        }
+        if (loadedSettings.headerNotice?.includes('FileVault')) {
+          loadedSettings.headerNotice = loadedSettings.headerNotice.replace(/FileVault/g, 'FileDockPro');
+        }
+
         const loadedData: DatabaseSchema = {
           users: usersList,
           passwords: passwordsDict,
@@ -253,7 +261,7 @@ class Database {
           ratings: parsed.ratings || [],
           reports: parsed.reports || [],
           notifications: parsed.notifications || [],
-          settings: { ...defaultSettings, ...(parsed.settings || {}) },
+          settings: loadedSettings,
           activityLogs: parsed.activityLogs || [],
         };
 
