@@ -46,7 +46,15 @@ function getInitialRouteState() {
   const hash = window.location.hash;
   const search = window.location.search;
 
-  const isAdmin = pathname.startsWith('/admin') || hash === '#admin';
+  const hasAdminStorage = Boolean(
+    localStorage.getItem('filevault_admin_token') || localStorage.getItem('filevault_admin_user')
+  );
+  const adminViewPref = localStorage.getItem('filevault_admin_view_active');
+
+  const isAdmin =
+    pathname.startsWith('/admin') ||
+    hash === '#admin' ||
+    (hasAdminStorage && adminViewPref === 'true');
 
   let downloadFileId: string | null = null;
   const urlParams = new URLSearchParams(search);
@@ -86,7 +94,25 @@ export default function App() {
   const initialRoute = getInitialRouteState();
 
   // Authentication & View Mode
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const storedAdmin = localStorage.getItem('filevault_admin_user');
+    if (storedAdmin) {
+      try {
+        const parsed = JSON.parse(storedAdmin);
+        if (parsed && parsed.role === 'admin') {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    const storedUser = localStorage.getItem('filevault_user');
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser);
+      } catch (e) {}
+    }
+    return null;
+  });
   const [isAdminView, setIsAdminView] = useState(initialRoute.isAdmin);
   const [downloadRouteFileId, setDownloadRouteFileId] = useState<string | null>(initialRoute.downloadFileId);
   const [loadingDownloadFile, setLoadingDownloadFile] = useState<boolean>(Boolean(initialRoute.downloadFileId));
@@ -333,12 +359,16 @@ export default function App() {
           categories={categories}
           ads={ads}
           onBackToSite={() => {
+            localStorage.setItem('filevault_admin_view_active', 'false');
             setIsAdminView(false);
             window.history.pushState({}, '', '/');
           }}
           onAdminLogout={() => {
             localStorage.removeItem('filevault_admin_token');
             localStorage.removeItem('filevault_admin_user');
+            localStorage.removeItem('filevault_admin_view_active');
+            localStorage.removeItem('filevault_token');
+            localStorage.removeItem('filevault_user');
             setCurrentUser(null);
             setIsAdminView(true);
           }}
@@ -352,10 +382,13 @@ export default function App() {
     return (
       <AdminLoginPage
         onAdminAuthenticated={(adminUser) => {
+          localStorage.setItem('filevault_admin_view_active', 'true');
           setCurrentUser(adminUser);
           setIsAdminView(true);
+          window.history.pushState({}, '', '/admin');
         }}
         onBackToSite={() => {
+          localStorage.setItem('filevault_admin_view_active', 'false');
           setIsAdminView(false);
           window.history.pushState({}, '', '/');
         }}
@@ -597,9 +630,11 @@ export default function App() {
           settings={siteSettings}
           isAdmin={currentUser?.role === 'admin' || Boolean(localStorage.getItem('filevault_admin_token')) || Boolean(localStorage.getItem('filevault_admin_user'))}
           onOpenAdminPanel={() => {
+            localStorage.setItem('filevault_admin_view_active', 'true');
             setIsAdminView(true);
             setDownloadRouteFileId(null);
             setSelectedFileForDownload(null);
+            window.history.pushState({}, '', '/admin');
           }}
         />
       </>
@@ -981,7 +1016,11 @@ export default function App() {
         isOpen={Boolean(siteSettings?.maintenanceMode)}
         settings={siteSettings}
         isAdmin={currentUser?.role === 'admin' || Boolean(localStorage.getItem('filevault_admin_token')) || Boolean(localStorage.getItem('filevault_admin_user'))}
-        onOpenAdminPanel={() => setIsAdminView(true)}
+        onOpenAdminPanel={() => {
+          localStorage.setItem('filevault_admin_view_active', 'true');
+          setIsAdminView(true);
+          window.history.pushState({}, '', '/admin');
+        }}
       />
 
     </div>

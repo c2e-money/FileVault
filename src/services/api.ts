@@ -335,21 +335,34 @@ export const api = {
 
   subscribeCurrentUser(callback: (user: User | null) => void) {
     return onAuthStateChanged(auth, (fbUser) => {
+      const adminUserStr = localStorage.getItem('filevault_admin_user');
+      if (adminUserStr) {
+        try {
+          const parsed = JSON.parse(adminUserStr);
+          if (parsed && parsed.role === 'admin') {
+            callback(parsed);
+            return;
+          }
+        } catch {}
+      }
+
       if (!fbUser) {
-        const adminUserStr = localStorage.getItem('filevault_admin_user');
-        if (adminUserStr) {
+        callback(null);
+        return;
+      }
+
+      onSnapshot(doc(db, 'users', fbUser.uid), (snap) => {
+        const freshAdminStr = localStorage.getItem('filevault_admin_user');
+        if (freshAdminStr) {
           try {
-            const parsed = JSON.parse(adminUserStr);
-            if (parsed && parsed.role === 'admin') {
-              callback(parsed);
+            const freshAdminObj = JSON.parse(freshAdminStr);
+            if (freshAdminObj && freshAdminObj.role === 'admin') {
+              callback(freshAdminObj);
               return;
             }
           } catch {}
         }
-        callback(null);
-        return;
-      }
-      onSnapshot(doc(db, 'users', fbUser.uid), (snap) => {
+
         const cleanEmail = (fbUser.email || '').toLowerCase();
         const isKnownAdmin =
           cleanEmail === 'dipenshorts@gmail.com' ||
