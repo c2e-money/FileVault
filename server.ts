@@ -25,6 +25,7 @@ import {
   testGitHubConnection,
   isGitHubConfigured,
   streamGitHubFileAsset,
+  ensureSettingsLoaded,
 } from './src/server/githubStorage.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'filevault-super-secret-key-2026';
@@ -472,10 +473,11 @@ app.post('/api/files/upload', (req: AuthRequest, res: Response, next: NextFuncti
         const fileId = `file-${Date.now()}-${shortId}`;
         const parsedTags = typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : [];
 
+        await ensureSettingsLoaded();
         let currentStorageProvider = database.settings?.storageProvider || 'gdrive';
 
         // Auto-detect GitHub Releases if configured or explicitly selected
-        if (currentStorageProvider === 'github' || isGitHubConfigured()) {
+        if (currentStorageProvider === 'github' || (await isGitHubConfigured())) {
           currentStorageProvider = 'github';
         }
 
@@ -1344,9 +1346,10 @@ app.put('/api/files/:id/replace', upload.single('file'), async (req: AuthRequest
   let githubResult: { downloadUrl: string; assetId: number; size: number } | null = null;
   let driveResult: { driveFileId: string; webViewLink?: string; webContentLink?: string } | null = null;
 
+  await ensureSettingsLoaded();
   const currentStorageProvider = database.settings?.storageProvider || 'local';
 
-  if (currentStorageProvider === 'github' || isGitHubConfigured()) {
+  if (currentStorageProvider === 'github' || (await isGitHubConfigured())) {
     try {
       githubResult = await uploadToGitHubRelease(req.file.path, file.originalName || req.file.originalname, req.file.mimetype);
     } catch (ghErr) {

@@ -2,6 +2,44 @@ import fs from 'fs';
 import path from 'path';
 import { db } from './db.js';
 
+const FIRESTORE_PROJECT_ID = 'my-website-242fc';
+
+export async function ensureSettingsLoaded(): Promise<any> {
+  const database = db.getDb();
+  if (database?.settings?.githubToken && database?.settings?.githubRepo) {
+    return database.settings;
+  }
+
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents/settings/global`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const docJson = await res.json();
+      if (docJson && docJson.fields) {
+        const fields = docJson.fields;
+        const remoteSettings: any = {};
+        for (const key of Object.keys(fields)) {
+          const val = fields[key];
+          if ('stringValue' in val) remoteSettings[key] = val.stringValue;
+          else if ('integerValue' in val) remoteSettings[key] = Number(val.integerValue);
+          else if ('doubleValue' in val) remoteSettings[key] = Number(val.doubleValue);
+          else if ('booleanValue' in val) remoteSettings[key] = val.booleanValue;
+        }
+
+        database.settings = {
+          ...(database.settings || {}),
+          ...remoteSettings,
+        };
+        db.save();
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to load settings from Firestore REST API in githubStorage:', err);
+  }
+
+  return database.settings || {};
+}
+
 function getGitHubConfig(overrides?: { token?: string; repo?: string; tag?: string }) {
   const database = db.getDb();
   const settings: any = database?.settings || {};
@@ -32,12 +70,14 @@ function getGitHubConfig(overrides?: { token?: string; repo?: string; tag?: stri
   };
 }
 
-export function isGitHubConfigured(): boolean {
+export async function isGitHubConfigured(): Promise<boolean> {
+  await ensureSettingsLoaded();
   const cfg = getGitHubConfig();
   return Boolean(cfg.token && cfg.owner && cfg.repoName);
 }
 
 export async function testGitHubConnection(overrides?: { token?: string; repo?: string; tag?: string }): Promise<{ status: 'CONNECTED' | 'ERROR'; repo?: string; message?: string; error?: string }> {
+  await ensureSettingsLoaded();
   const cfg = getGitHubConfig(overrides);
 
   if (!cfg.token) {
@@ -211,6 +251,7 @@ export async function uploadToGitHubRelease(
   originalName: string,
   mimeType: string
 ): Promise<{ downloadUrl: string; assetId: number; size: number }> {
+  await ensureSettingsLoaded();
   const cfg = getGitHubConfig();
 
   if (!cfg.token || !cfg.owner || !cfg.repoName) {
@@ -270,6 +311,7 @@ export async function uploadToGitHubRelease(
 }
 
 export async function deleteFromGitHubRelease(assetId: number): Promise<boolean> {
+  await ensureSettingsLoaded();
   const cfg = getGitHubConfig();
   if (!cfg.token || !cfg.owner || !cfg.repoName) return false;
 
@@ -288,6 +330,7 @@ export async function deleteFromGitHubRelease(assetId: number): Promise<boolean>
 }
 
 export async function streamGitHubFileAsset(file: any, req: any, res: any): Promise<boolean> {
+  await ensureSettingsLoaded();
   const cfg = getGitHubConfig();
   const ghToken = cfg.token;
   const targetUrl = file.externalUrl || (file.filePath && (file.filePath.startsWith('http://') || file.filePath.startsWith('https://')) ? file.filePath : null);
