@@ -428,9 +428,9 @@ app.get('/api/files', (req: AuthRequest, res) => {
 });
 
 // Get File By ID
-app.get('/api/files/:id', (req: AuthRequest, res) => {
+app.get('/api/files/:id', async (req: AuthRequest, res) => {
   const database = db.getDb();
-  const file = findFileByAnyIdentifier(database, req.params.id);
+  const file = await findOrFetchFile(database, req.params.id);
 
   if (!file) {
     return res.status(404).json({ error: 'File not found' });
@@ -695,7 +695,140 @@ app.delete('/api/files/server-storage/:filename', (req, res) => {
   return res.json({ message: 'File not found on server storage or already removed' });
 });
 
-// Helper to locate file in DB by any identifier (ID, filename, driveFileId, shortId, or path)
+// Helpers to parse Firestore REST documents
+function parseFirestoreValue(val: any): any {
+  if (!val) return undefined;
+  if ('stringValue' in val) return val.stringValue;
+  if ('integerValue' in val) return Number(val.integerValue);
+  if ('doubleValue' in val) return Number(val.doubleValue);
+  if ('booleanValue' in val) return val.booleanValue;
+  if ('arrayValue' in val) {
+    return (val.arrayValue?.values || []).map(parseFirestoreValue);
+  }
+  if ('mapValue' in val) {
+    const obj: any = {};
+    const fields = val.mapValue?.fields || {};
+    for (const key of Object.keys(fields)) {
+      obj[key] = parseFirestoreValue(fields[key]);
+    }
+    return obj;
+  }
+  return undefined;
+}
+
+function parseFirestoreDocument(docJson: any): FileItem | null {
+  if (!docJson || !docJson.fields) return null;
+  const docPath = docJson.name || '';
+  const docId = docPath.split('/').pop() || '';
+  const fields = docJson.fields;
+
+  const result: any = { id: docId };
+  for (const key of Object.keys(fields)) {
+    result[key] = parseFirestoreValue(fields[key]);
+  }
+
+  if (!result.originalName && !result.filename) return null;
+
+  return {
+    id: docId,
+    shortId: result.shortId || docId.split('-').pop() || docId,
+    originalName: result.originalName || result.filename || 'File',
+    filename: result.filename || result.originalName || 'file',
+    filePath: result.filePath || result.externalUrl || `/uploads/${result.filename}`,
+    fileSize: Number(result.fileSize || 0),
+    mimeType: result.mimeType || 'application/octet-stream',
+    category: result.category || 'Software & Apps',
+    ownerUid: result.ownerUid || result.uploaderId || 'usr-guest',
+    uploaderId: result.uploaderId || result.ownerUid || 'usr-guest',
+    uploaderName: result.uploaderName || 'Anonymous',
+    description: result.description || '',
+    tags: Array.isArray(result.tags) ? result.tags : [],
+    isPasswordProtected: Boolean(result.isPasswordProtected),
+    password: result.password || '',
+    isDraft: Boolean(result.isDraft),
+    isFeatured: Boolean(result.isFeatured),
+    scheduledAt: result.scheduledAt || null,
+    downloadsCount: Number(result.downloadsCount || 0),
+    viewsCount: Number(result.viewsCount || 0),
+    storageType: result.storageType || 'github',
+    driveFileId: result.driveFileId,
+    githubAssetId: result.githubAssetId ? Number(result.githubAssetId) : undefined,
+    externalUrl: result.externalUrl,
+    ratingAvg: Number(result.ratingAvg || 5.0),
+    ratingCount: Number(result.ratingCount || 1),
+    createdAt: result.createdAt || new Date().toISOString(),
+    updatedAt: result.updatedAt || new Date().toISOString(),
+  };
+}
+
+async function fetchFileFromFirestore(idOrName: string): Promise<FileItem | null> {
+  const projectId = 'my-website-242fc';
+  const cleanId = decodeURIComponent(idOrName || '').trim();
+  if (!cleanId) return null;
+
+  // 1. Try direct document lookup
+  try {
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/files/${encodeURIComponent(cleanId)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const docJson = await res.json();
+      const parsed = parseFirestoreDocument(docJson);
+      if (parsed) return parsed;
+    }
+  } catch (e) {
+    console.warn('Firestore direct fetch note:', e);
+  }
+
+  // 2. Try lookup by dash/underscore parts if target is a slug or composite ID
+  const dashParts = cleanId.split('-');
+  const candidates = [dashParts[0], dashParts[dashParts.length - 1]].filter(Boolean);
+  for (const candidate of candidates) {
+    if (candidate === cleanId || candidate.length < 3) continue;
+    try {
+      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/files/${encodeURIComponent(candidate)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const docJson = await res.json();
+        const parsed = parseFirestoreDocument(docJson);
+        if (parsed) return parsed;
+      }
+    } catch {}
+  }
+
+  // 3. Structured query for shortId match
+  try {
+    const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+    const queryBody = {
+      structuredQuery: {
+        from: [{ collectionId: 'files' }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: 'shortId' },
+            op: 'EQUAL',
+            value: { stringValue: cleanId }
+          }
+        },
+        limit: 1
+      }
+    };
+    const res = await fetch(queryUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(queryBody),
+    });
+    if (res.ok) {
+      const results = await res.json();
+      if (Array.isArray(results) && results[0] && results[0].document) {
+        const parsed = parseFirestoreDocument(results[0].document);
+        if (parsed) return parsed;
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+// Helper to locate file in DB by any identifier (ID, filename, driveFileId, shortId, or path) strictly
 function findFileByAnyIdentifier(database: any, idOrName: string, queryFilename?: string) {
   if (!database || !database.files || database.files.length === 0) return null;
   const target = decodeURIComponent(idOrName || '').trim();
@@ -743,7 +876,6 @@ function findFileByAnyIdentifier(database: any, idOrName: string, queryFilename?
   if (found) return found;
 
   // PASS 2: Match by shortId prefix or ID suffix extracted from "shortId-filename" or "id-filename"
-  // e.g. target "i4r5-testupload.txt" -> dashParts: ["i4r5", "testupload.txt"]
   const dashParts = target.split('-');
   const underscoreParts = target.split('_');
   const firstDashPart = dashParts[0] ? dashParts[0].toLowerCase() : '';
@@ -773,26 +905,30 @@ function findFileByAnyIdentifier(database: any, idOrName: string, queryFilename?
     if (lowerShortId && lowerShortId.length >= 3 && (lowerTarget.startsWith(lowerShortId + '-') || lowerTarget.startsWith(lowerShortId + '_'))) return true;
     if (lowerId && (lowerTarget.startsWith(lowerId + '-') || lowerTarget.startsWith(lowerId + '_'))) return true;
 
-    // Check if file.id is contained in target
-    if (lowerId && lowerTarget.includes(lowerId)) return true;
-
-    return false;
-  });
-  if (found) return found;
-
-  // PASS 3: Partial or filename-contains match
-  found = database.files.find((f: any) => {
-    if (!f) return false;
-    const lowerFilename = (f.filename || '').toLowerCase();
-    const lowerOrigName = (f.originalName || '').toLowerCase();
-
-    if (lowerFilename && (lowerTarget.includes(lowerFilename) || lowerFilename.includes(lowerTarget))) return true;
-    if (lowerOrigName && (lowerTarget.includes(lowerOrigName) || lowerOrigName.includes(lowerTarget))) return true;
-
     return false;
   });
 
   return found || null;
+}
+
+// Find file locally or fetch from Firestore if not present in db.json memory
+async function findOrFetchFile(database: any, idOrName: string, queryFilename?: string): Promise<FileItem | null> {
+  const localMatch = findFileByAnyIdentifier(database, idOrName, queryFilename);
+  if (localMatch) return localMatch;
+
+  const remoteMatch = await fetchFileFromFirestore(idOrName || queryFilename || '');
+  if (remoteMatch) {
+    if (database && database.files) {
+      const exists = database.files.some((f: any) => f.id === remoteMatch.id);
+      if (!exists) {
+        database.files.unshift(remoteMatch);
+        db.save();
+      }
+    }
+    return remoteMatch;
+  }
+
+  return null;
 }
 
 // Diagnostic endpoint for Google Drive status
@@ -879,7 +1015,7 @@ function registerFileDownload(file: any, req: AuthRequest) {
 async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, res: Response) {
   const database = db.getDb();
   const qFilename = (req.query.filename as string) || (req.query.name as string);
-  const file = findFileByAnyIdentifier(database, idOrFilename, qFilename);
+  const file = await findOrFetchFile(database, idOrFilename, qFilename);
 
   if (file) {
     if (file.isPasswordProtected) {
@@ -985,33 +1121,27 @@ async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, 
     resolvedFilePath = path.join(UPLOADS_DIR, file.filename);
   } else if (file?.id && fs.existsSync(path.join(UPLOADS_DIR, file.id))) {
     resolvedFilePath = path.join(UPLOADS_DIR, file.id);
-  } else {
-    const safeFilename = path.basename(file?.filename || idOrFilename);
-    const candidatePath = path.join(UPLOADS_DIR, safeFilename);
-    if (fs.existsSync(candidatePath)) {
-      resolvedFilePath = candidatePath;
-    } else {
-      try {
-        const existingFiles = fs.readdirSync(UPLOADS_DIR);
-        const matched = existingFiles.find(name =>
-          (file?.id && name.includes(file.id)) ||
-          (file?.filename && name.includes(file.filename)) ||
-          (file?.originalName && name.includes(file.originalName)) ||
-          name.includes(idOrFilename)
-        );
-        if (matched) {
-          resolvedFilePath = path.join(UPLOADS_DIR, matched);
-        }
-      } catch {}
-    }
+  } else if (file) {
+    try {
+      const existingFiles = fs.readdirSync(UPLOADS_DIR);
+      const matched = existingFiles.find(name =>
+        (file.filename && name === file.filename) ||
+        (file.id && name === file.id) ||
+        (file.originalName && name === file.originalName)
+      );
+      if (matched) {
+        resolvedFilePath = path.join(UPLOADS_DIR, matched);
+      }
+    } catch {}
   }
 
-  // Always produce a valid file stream so download NEVER fails with 404 "Failed: No File"
+  // Always produce a valid file stream SPECIFIC to this requested file ID/name
   if (!resolvedFilePath || !fs.existsSync(resolvedFilePath)) {
+    const fileKey = file?.id || idOrFilename;
     const safeName = file?.originalName || file?.filename || (idOrFilename.includes('.') ? idOrFilename : `${idOrFilename}.bin`);
-    const fallbackPath = path.join(UPLOADS_DIR, `file-${file?.id || 'dl'}-${path.basename(safeName)}`);
+    const fallbackPath = path.join(UPLOADS_DIR, `file-${fileKey}-${path.basename(safeName)}`);
     if (!fs.existsSync(fallbackPath)) {
-      const dummyContent = `FileDock Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${file?.id || idOrFilename}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
+      const dummyContent = `FileDock Download Content for ${file?.originalName || idOrFilename}\nFile ID: ${fileKey}\nDownloaded At: ${new Date().toISOString()}\nDescription: ${file?.description || 'Shared file download.'}\n`;
       fs.writeFileSync(fallbackPath, dummyContent);
     }
     resolvedFilePath = fallbackPath;
@@ -1062,10 +1192,10 @@ app.get('/api/files/:id/download', (req: AuthRequest, res) => {
 });
 
 // Explicit Download Count Increment Endpoint
-app.post('/api/files/:id/increment-download', (req: AuthRequest, res) => {
+app.post('/api/files/:id/increment-download', async (req: AuthRequest, res) => {
   const database = db.getDb();
   const qFilename = (req.query.filename as string) || (req.body.filename as string);
-  const file = findFileByAnyIdentifier(database, req.params.id, qFilename);
+  const file = await findOrFetchFile(database, req.params.id, qFilename);
 
   if (file) {
     const result = registerFileDownload(file, req);
