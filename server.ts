@@ -805,7 +805,7 @@ function registerFileDownload(file: any, req: AuthRequest) {
 
   const fileKey = file.id || file.filename;
 
-  // Deduplication check: check if this user/visitor/IP downloaded this file in the last 60 seconds
+  // Deduplication check: check if this user/visitor/IP downloaded this file in the last 3 seconds (prevents double-counting on rapid double click, but allows immediate real-time count increments)
   const now = Date.now();
   const recentDownload = database.downloads.find((d: any) => {
     const isSameFile = d.fileId === fileKey || d.fileId === file.id || d.fileId === file.filename;
@@ -817,7 +817,7 @@ function registerFileDownload(file: any, req: AuthRequest) {
     if (!matchesClient) return false;
 
     const timeDiff = now - new Date(d.downloadedAt).getTime();
-    return timeDiff >= 0 && timeDiff < 60000;
+    return timeDiff >= 0 && timeDiff < 3000;
   });
 
   if (recentDownload) {
@@ -982,12 +982,9 @@ async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, 
       fs.writeFileSync(fallbackPath, dummyContent);
     }
     resolvedFilePath = fallbackPath;
-    if (file) {
-      file.filePath = resolvedFilePath;
-    }
   }
 
-  const rawDisplayName = (req.query.name as string) || file?.originalName || path.basename(resolvedFilePath);
+  const rawDisplayName = file?.originalName || (req.query.name as string) || file?.filename || path.basename(resolvedFilePath);
   const mimeType = file?.mimeType || 'application/octet-stream';
   const safeDisplayName = rawDisplayName.replace(/["\r\n\/\\]/g, '_');
   const encodedDisplayName = encodeURIComponent(rawDisplayName);
