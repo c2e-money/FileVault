@@ -20,7 +20,7 @@
     }
   ],
   "passwords": {
-    "usr-admin-1": "$2b$10$qFDxXRENrO7DMttpxK8RY.Q5fv3mBcJa1xIKcZFthJGsUF/AxcGQS",
+    "usr-admin-1": "$2b$10$.Y.DLJ3POQLYi1gmOayqzOh9qGz4l5KOPvs4g8iE68.TDnnVP4bgy",
     "usr-regular-1": "$2b$10$iJe.J7SezHF4l87ojsJ9oueFctsSQuEIXmANgP42gTYZs2oB.7sTm"
   },
   "files": [
@@ -245,70 +245,59 @@
   ],
   "advertisements": [
     {
-      "id": "ad-banner-top",
-      "title": "Top Header Leaderboard Banner",
-      "type": "banner",
-      "code": "<div class=\"p-3.5 bg-gradient-to-r from-indigo-950 via-zinc-900 to-purple-950 border border-indigo-500/30 rounded-xl text-center text-xs font-medium text-indigo-200 flex items-center justify-between shadow-lg\"><div><strong class=\"text-white font-bold\">Cloud Host Pro:</strong> Get ultra-fast SSD NVMe cloud servers with direct download speed.</div><a href=\"https://rightyrely.com/d7/5e/20/d75e2089a96bcea84d2e4ca5ffbbc3fd.js\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition font-bold\">Visit Offer</a></div>",
-      "location": "header_top",
-      "isEnabled": true,
-      "clicks": 142,
-      "impressions": 3890,
-      "createdAt": "2026-07-24T18:27:38.799Z"
-    },
-    {
-      "id": "ad-download-native",
-      "title": "Download Page Native Sponsor",
-      "type": "native",
-      "code": "<div class=\"p-4 bg-zinc-900/90 border border-zinc-800 rounded-2xl flex items-center gap-4 text-left shadow-lg\"><div><div class=\"w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm\">VPN</div></div><div class=\"flex-1\"><h4 class=\"font-bold text-zinc-100 text-xs\">UltraVPN High Speed Node</h4><p class=\"text-[11px] text-zinc-400\">Encrypted 10Gbps dedicated download proxy.</p></div><a href=\"https://rightyrely.com/d7/5e/20/d75e2089a96bcea84d2e4ca5ffbbc3fd.js\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-bold whitespace-nowrap\">Learn More</a></div>",
-      "location": "download_page_middle",
-      "isEnabled": true,
-      "clicks": 89,
-      "impressions": 2150,
-      "createdAt": "2026-07-24T18:27:38.799Z"
-    },
-    {
-      "id": "ad-sticky-bottom",
-      "title": "Bottom Sticky Bar Ad",
-      "type": "sticky",
-      "code": "<div class=\"flex items-center justify-between w-full max-w-4xl mx-auto px-4 py-2 bg-zinc-900/95 backdrop-blur-md border border-zinc-800 rounded-full shadow-2xl text-xs text-zinc-300\"><div class=\"flex items-center gap-2\">⚡ <span class=\"font-bold text-amber-400\">High-Speed Mirror:</span> Unlimited Fast Storage Cloud Storage</div><a href=\"https://rightyrely.com/d7/5e/20/d75e2089a96bcea84d2e4ca5ffbbc3fd.js\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-3 py-1 rounded-full transition\">Learn More</a></div>",
-      "location": "global_sticky_bottom",
-      "isEnabled": true,
-      "clicks": 64,
-      "impressions": 1820,
-      "createdAt": "2026-07-24T18:27:38.799Z"
-    },
-    {
       "id": "ad-popunder-main",
       "title": "Main Download Popunder Ad",
       "type": "popunder",
-      "code": "https://rightyrely.com/d7/5e/20/d75e2089a96bcea84d2e4ca5ffbbc3fd.js",
+      "code": "<script src=\"https://rightyrely.com/53/92/fc/5392fcc75419f61c91e6f8fe414638f9.js\"></script>",
       "location": "download_page",
       "isEnabled": true,
-      "clicks": 105,
-      "impressions": 4200,
-      "createdAt": "2026-07-24T18:27:38.799Z"
+      "clicks": 0,
+      "impressions": 0,
+      "createdAt": "2026-08-10T17:28:00.000Z"
+    },
+    {
+      "id": "ad-socialbar-main",
+      "title": "Social Bar Ad",
+      "type": "socialbar",
+      "code": "<script src=\"https://rightyrely.com/ae/f4/a1/aef4a178cbd7000a43b9c0e73aba7fad.js\"></script>",
+      "location": "download_page",
+      "isEnabled": true,
+      "clicks": 0,
+      "impressions": 0,
+      "createdAt": "2026-08-10T17:28:00.000Z"
     },
     {
       "id": "ad-smartlink-direct",
       "title": "High Speed Smart Link Direct",
       "type": "smartlink",
-      "code": "https://rightyrely.com/smartlink",
+      "code": "https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a",
       "location": "download_button",
       "isEnabled": true,
-      "clicks": 180,
-      "impressions": 2900,
-      "createdAt": "2026-07-24T18:27:38.799Z"
+      "clicks": 0,
+      "impressions": 0,
+      "createdAt": "2026-08-10T17:28:00.000Z"
     },
     {
-      "id": "ad-iframe-banner",
-      "title": "Download Page Iframe Banner",
+      "id": "ad-banner-468x60",
+      "title": "Download Page Banner (468x60)",
       "type": "banner",
-      "code": "<iframe src=\"https://rightyrely.com/d7/5e/20/d75e2089a96bcea84d2e4ca5ffbbc3fd.js\" width=\"100%\" height=\"90\" style=\"border:0;border-radius:12px;overflow:hidden;\" title=\"Advertisement Banner\"></iframe>",
-      "location": "download_page_banner",
+      "code": "<script>\n  atOptions = {\n    'key' : '6ae81df28c5e141bffdad2683ec8da66',\n    'format' : 'iframe',\n    'height' : 60,\n    'width' : 468,\n    'params' : {}\n  };\n</script>\n<script src=\"https://rightyrely.com/6ae81df28c5e141bffdad2683ec8da66/invoke.js\"></script>",
+      "location": "download_page_top",
       "isEnabled": true,
-      "clicks": 95,
-      "impressions": 3100,
-      "createdAt": "2026-07-24T18:27:38.799Z"
+      "clicks": 0,
+      "impressions": 0,
+      "createdAt": "2026-08-10T17:28:00.000Z"
+    },
+    {
+      "id": "ad-native-main",
+      "title": "Download Page Native Banner",
+      "type": "native",
+      "code": "<script async=\"async\" data-cfasync=\"false\" src=\"https://rightyrely.com/c9a50f399d991fbd28e09f98504f9cfa/invoke.js\"></script>\n<div id=\"container-c9a50f399d991fbd28e09f98504f9cfa\"></div>",
+      "location": "download_page_middle",
+      "isEnabled": true,
+      "clicks": 0,
+      "impressions": 0,
+      "createdAt": "2026-08-10T17:28:00.000Z"
     }
   ],
   "comments": [],

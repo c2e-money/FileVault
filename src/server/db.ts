@@ -59,7 +59,7 @@ const defaultAds: Advertisement[] = [
     id: 'ad-popunder-main',
     title: 'Popunder Ad',
     type: 'popunder',
-    code: '<script src="https://rightyrely.com/0a/44/b9/0a44b90796d94943a2537dad9f2592d0.js"></script>',
+    code: '<script src="https://rightyrely.com/53/92/fc/5392fcc75419f61c91e6f8fe414638f9.js"></script>',
     location: 'download_page',
     isEnabled: true,
     clicks: 0,
@@ -70,7 +70,7 @@ const defaultAds: Advertisement[] = [
     id: 'ad-socialbar-main',
     title: 'Social Bar Ad',
     type: 'socialbar',
-    code: '<script src="https://rightyrely.com/96/b3/8d/96b38d2a9c3702f149bd60e4800e311b.js"></script>',
+    code: '<script src="https://rightyrely.com/ae/f4/a1/aef4a178cbd7000a43b9c0e73aba7fad.js"></script>',
     location: 'download_page',
     isEnabled: true,
     clicks: 0,
@@ -81,7 +81,7 @@ const defaultAds: Advertisement[] = [
     id: 'ad-smartlink-main',
     title: 'Smart Link Monetized CTA',
     type: 'smartlink',
-    code: 'https://rightyrely.com/cu96f0bz3h?key=09cf79c98298c393e20ad910f6953bf7',
+    code: 'https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a',
     location: 'download_button',
     isEnabled: true,
     clicks: 0,
@@ -92,16 +92,16 @@ const defaultAds: Advertisement[] = [
     id: 'ad-banner-468x60',
     title: 'Download Page Banner (468x60)',
     type: 'banner',
-    code: `<script type="text/javascript">
+    code: `<script>
   atOptions = {
-    'key' : '7e7c02ee62652ec8bf5c47225c4cddec',
+    'key' : '6ae81df28c5e141bffdad2683ec8da66',
     'format' : 'iframe',
     'height' : 60,
     'width' : 468,
     'params' : {}
   };
 </script>
-<script type="text/javascript" src="https://rightyrely.com/7e7c02ee62652ec8bf5c47225c4cddec/invoke.js"></script>`,
+<script src="https://rightyrely.com/6ae81df28c5e141bffdad2683ec8da66/invoke.js"></script>`,
     location: 'download_page_top',
     isEnabled: true,
     clicks: 0,
@@ -112,8 +112,8 @@ const defaultAds: Advertisement[] = [
     id: 'ad-native-main',
     title: 'Download Page Native Banner',
     type: 'native',
-    code: `<script async="async" data-cfasync="false" src="https://rightyrely.com/dbaf6128171b01f81aaa66b44edd673e/invoke.js"></script>
-<div id="container-dbaf6128171b01f81aaa66b44edd673e"></div>`,
+    code: `<script async="async" data-cfasync="false" src="https://rightyrely.com/c9a50f399d991fbd28e09f98504f9cfa/invoke.js"></script>
+<div id="container-c9a50f399d991fbd28e09f98504f9cfa"></div>`,
     location: 'download_page_middle',
     isEnabled: true,
     clicks: 0,
