@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Wrench, Clock, MessageSquare, ExternalLink, ShieldCheck, Lock } from 'lucide-react';
+import { Wrench, Clock, MessageSquare, ExternalLink } from 'lucide-react';
 import { WebsiteSettings } from '../types.js';
 
 interface MaintenanceModalProps {
@@ -96,27 +96,6 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             )}
           </div>
         </div>
-
-        {/* Admin Bypass Notification */}
-        {isAdmin && (
-          <div className="p-3 bg-indigo-950/80 border border-indigo-500/40 rounded-2xl text-left space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-indigo-300">
-              <ShieldCheck className="w-4 h-4 text-indigo-400" />
-              <span>Administrator Mode Active</span>
-            </div>
-            <p className="text-[11px] text-zinc-400">
-              As an administrator, you can continue managing the platform and turn off maintenance mode in Settings.
-            </p>
-            {onOpenAdminPanel && (
-              <button
-                onClick={onOpenAdminPanel}
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-md transition"
-              >
-                Open Admin Panel Settings
-              </button>
-            )}
-          </div>
-        )}
 
         <div className="text-[10px] text-zinc-500 font-medium">
           Please check back in a few minutes. Thank you for your patience!
