@@ -705,61 +705,94 @@ function findFileByAnyIdentifier(database: any, idOrName: string, queryFilename?
   const lowerTarget = target.toLowerCase();
   const lowerQFilename = qFilename.toLowerCase();
 
-  // Extract real shortId suffix if target is in format "file-timestamp-shortId"
-  const targetParts = target.split('-');
-  const shortCode = targetParts.length > 1 ? targetParts[targetParts.length - 1] : target;
-  const lowerShortCode = shortCode.toLowerCase();
-
-  // PASS 1: Strict Exact ID / shortId / filename / driveFileId match
+  // PASS 1: Strict Exact Match on ID, shortId, filename, originalName, driveFileId, githubAssetId
   let found = database.files.find((f: any) => {
     if (!f) return false;
     const lowerId = (f.id || '').toLowerCase();
     const lowerShortId = (f.shortId || '').toLowerCase();
     const lowerFilename = (f.filename || '').toLowerCase();
+    const lowerOrigName = (f.originalName || '').toLowerCase();
     const lowerDriveId = (f.driveFileId || '').toLowerCase();
+    const lowerGithubAssetId = f.githubAssetId ? String(f.githubAssetId).toLowerCase() : '';
 
-    if (lowerTarget && (lowerId === lowerTarget || lowerShortId === lowerTarget || lowerFilename === lowerTarget || lowerDriveId === lowerTarget)) {
-      return true;
+    if (lowerTarget) {
+      if (
+        lowerId === lowerTarget ||
+        lowerShortId === lowerTarget ||
+        lowerFilename === lowerTarget ||
+        lowerOrigName === lowerTarget ||
+        lowerDriveId === lowerTarget ||
+        (lowerGithubAssetId && lowerGithubAssetId === lowerTarget)
+      ) {
+        return true;
+      }
     }
-    if (lowerShortCode && lowerShortCode.length >= 3 && (lowerShortId === lowerShortCode || lowerId.endsWith('-' + lowerShortCode))) {
-      return true;
+    if (lowerQFilename) {
+      if (
+        lowerFilename === lowerQFilename ||
+        lowerOrigName === lowerQFilename ||
+        lowerId === lowerQFilename ||
+        lowerShortId === lowerQFilename ||
+        lowerDriveId === lowerQFilename
+      ) {
+        return true;
+      }
     }
     return false;
   });
   if (found) return found;
 
-  // PASS 2: Exact Original Name / Query Filename match
+  // PASS 2: Match by shortId prefix or ID suffix extracted from "shortId-filename" or "id-filename"
+  // e.g. target "i4r5-testupload.txt" -> dashParts: ["i4r5", "testupload.txt"]
+  const dashParts = target.split('-');
+  const underscoreParts = target.split('_');
+  const firstDashPart = dashParts[0] ? dashParts[0].toLowerCase() : '';
+  const lastDashPart = dashParts[dashParts.length - 1] ? dashParts[dashParts.length - 1].toLowerCase() : '';
+  const lastUnderscorePart = underscoreParts[underscoreParts.length - 1] ? underscoreParts[underscoreParts.length - 1].toLowerCase() : '';
+
   found = database.files.find((f: any) => {
     if (!f) return false;
-    const lowerOrigName = (f.originalName || '').toLowerCase();
-    const lowerFilename = (f.filename || '').toLowerCase();
-    const lowerDriveId = (f.driveFileId || '').toLowerCase();
     const lowerId = (f.id || '').toLowerCase();
+    const lowerShortId = (f.shortId || '').toLowerCase();
 
-    if (lowerQFilename && (lowerOrigName === lowerQFilename || lowerFilename === lowerQFilename || lowerId === lowerQFilename || lowerDriveId === lowerQFilename)) {
-      return true;
-    }
-    if (lowerTarget && lowerOrigName && lowerOrigName === lowerTarget) {
-      return true;
-    }
+    // Check shortId matching firstDashPart (e.g. "i4r5" from "i4r5-testupload.txt")
+    if (lowerShortId && firstDashPart && lowerShortId === firstDashPart) return true;
+
+    // Check shortId matching lastDashPart (e.g. "i4r5" from "file-1785316823483-i4r5")
+    if (lowerShortId && lastDashPart && lowerShortId === lastDashPart) return true;
+
+    // Check shortId matching lastUnderscorePart
+    if (lowerShortId && lastUnderscorePart && lowerShortId === lastUnderscorePart) return true;
+
+    // Check if file.id ends with firstDashPart or lastDashPart or lastUnderscorePart
+    if (lowerId && firstDashPart && firstDashPart.length >= 3 && lowerId.endsWith('-' + firstDashPart)) return true;
+    if (lowerId && lastDashPart && lastDashPart.length >= 3 && lowerId.endsWith('-' + lastDashPart)) return true;
+    if (lowerId && lastUnderscorePart && lastUnderscorePart.length >= 3 && lowerId.endsWith('-' + lastUnderscorePart)) return true;
+
+    // Check if lowerTarget starts with file.shortId + '-' or file.id + '-' or file.id + '_'
+    if (lowerShortId && lowerShortId.length >= 3 && (lowerTarget.startsWith(lowerShortId + '-') || lowerTarget.startsWith(lowerShortId + '_'))) return true;
+    if (lowerId && (lowerTarget.startsWith(lowerId + '-') || lowerTarget.startsWith(lowerId + '_'))) return true;
+
+    // Check if file.id is contained in target
+    if (lowerId && lowerTarget.includes(lowerId)) return true;
+
     return false;
   });
   if (found) return found;
 
-  // PASS 3: Exact filename substring match only if target is specific
-  if (lowerTarget && lowerTarget.length >= 4) {
-    found = database.files.find((f: any) => {
-      if (!f) return false;
-      const lowerId = (f.id || '').toLowerCase();
-      const lowerFilename = (f.filename || '').toLowerCase();
-      const lowerOrigName = (f.originalName || '').toLowerCase();
+  // PASS 3: Partial or filename-contains match
+  found = database.files.find((f: any) => {
+    if (!f) return false;
+    const lowerFilename = (f.filename || '').toLowerCase();
+    const lowerOrigName = (f.originalName || '').toLowerCase();
 
-      return lowerId === lowerTarget || lowerFilename === lowerTarget || lowerOrigName === lowerTarget;
-    });
-    if (found) return found;
-  }
+    if (lowerFilename && (lowerTarget.includes(lowerFilename) || lowerFilename.includes(lowerTarget))) return true;
+    if (lowerOrigName && (lowerTarget.includes(lowerOrigName) || lowerOrigName.includes(lowerTarget))) return true;
 
-  return null;
+    return false;
+  });
+
+  return found || null;
 }
 
 // Diagnostic endpoint for Google Drive status

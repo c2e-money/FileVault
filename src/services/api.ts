@@ -649,7 +649,9 @@ export const api = {
 
   async getFileById(id: string): Promise<FileItem> {
     const cleanInput = id ? decodeURIComponent(id.split('?')[0].split('#')[0]) : '';
-    const shortCode = cleanInput.includes('-') ? cleanInput.split('-')[0] : cleanInput;
+    const dashParts = cleanInput.split('-');
+    const firstDash = dashParts[0] || cleanInput;
+    const lastDash = dashParts[dashParts.length - 1] || cleanInput;
 
     // 1. Try querying backend API first (works seamlessly with Express memory/storage)
     try {
@@ -660,14 +662,13 @@ export const api = {
       }
     } catch {}
 
-    // 2. Try Firestore lookup by ID or shortCode
-    const targetId = cleanInput.includes('_') ? cleanInput.split('_').pop()! : cleanInput;
-    let docSnap = await getDoc(doc(db, 'files', targetId)).catch(() => null);
-    if ((!docSnap || !docSnap.exists()) && targetId !== cleanInput) {
-      docSnap = await getDoc(doc(db, 'files', cleanInput)).catch(() => null);
+    // 2. Try Firestore lookup by ID, cleanInput, or shortCode parts
+    let docSnap = await getDoc(doc(db, 'files', cleanInput)).catch(() => null);
+    if (!docSnap || !docSnap.exists()) {
+      docSnap = await getDoc(doc(db, 'files', firstDash)).catch(() => null);
     }
     if (!docSnap || !docSnap.exists()) {
-      docSnap = await getDoc(doc(db, 'files', shortCode)).catch(() => null);
+      docSnap = await getDoc(doc(db, 'files', lastDash)).catch(() => null);
     }
 
     if (docSnap && docSnap.exists()) {
@@ -677,7 +678,7 @@ export const api = {
       const ownerUid = data.ownerUid || data.uploaderId || '';
       return {
         id: docSnap.id,
-        shortId: data.shortId || shortCode,
+        shortId: data.shortId || firstDash || lastDash,
         originalName: origName,
         filename: origName,
         filePath: fileUrl,
@@ -705,15 +706,29 @@ export const api = {
     }
 
     // 3. Fallback: search fetched files by shortId, id, or suffix
-    const allFiles = await this.getFiles({ limit: 100 }).catch(() => ({ files: [] }));
-    const match = allFiles.files.find(f =>
-      f.id === cleanInput ||
-      f.id === shortCode ||
-      (f.shortId && (f.shortId === shortCode || f.shortId === cleanInput)) ||
-      f.id.endsWith('-' + shortCode) ||
-      f.id.endsWith(shortCode) ||
-      getShareableDownloadUrl(f).endsWith('/' + cleanInput)
-    );
+    const allFiles = await this.getFiles({ limit: 200 }).catch(() => ({ files: [] }));
+    const lowerInput = cleanInput.toLowerCase();
+    const match = allFiles.files.find(f => {
+      if (!f) return false;
+      const lowerId = (f.id || '').toLowerCase();
+      const lowerShortId = (f.shortId || '').toLowerCase();
+      const lowerFilename = (f.filename || '').toLowerCase();
+      const lowerOrigName = (f.originalName || '').toLowerCase();
+
+      return (
+        lowerId === lowerInput ||
+        lowerShortId === lowerInput ||
+        lowerFilename === lowerInput ||
+        lowerOrigName === lowerInput ||
+        (lowerShortId && firstDash && lowerShortId === firstDash.toLowerCase()) ||
+        (lowerShortId && lastDash && lowerShortId === lastDash.toLowerCase()) ||
+        (lowerId && firstDash && lowerId.endsWith('-' + firstDash.toLowerCase())) ||
+        (lowerId && lastDash && lowerId.endsWith('-' + lastDash.toLowerCase())) ||
+        (lowerShortId && (lowerInput.startsWith(lowerShortId + '-') || lowerInput.startsWith(lowerShortId + '_'))) ||
+        (lowerId && (lowerInput.startsWith(lowerId + '-') || lowerInput.startsWith(lowerId + '_'))) ||
+        getShareableDownloadUrl(f).toLowerCase().endsWith('/' + lowerInput)
+      );
+    });
     if (match) return match;
 
     throw new Error('File not found in database');

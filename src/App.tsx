@@ -81,12 +81,6 @@ function getInitialRouteState() {
     downloadFileId = decodeURIComponent(pathname.slice(1));
   }
 
-  // Extract real file ID if formatted as slug_fileId
-  if (downloadFileId && downloadFileId.includes('_')) {
-    const parts = downloadFileId.split('_');
-    downloadFileId = parts[parts.length - 1] || downloadFileId;
-  }
-
   return { isAdmin, downloadFileId };
 }
 
