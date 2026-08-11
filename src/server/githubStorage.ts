@@ -286,3 +286,130 @@ export async function deleteFromGitHubRelease(assetId: number): Promise<boolean>
     return false;
   }
 }
+
+export async function streamGitHubFileAsset(file: any, req: any, res: any): Promise<boolean> {
+  const cfg = getGitHubConfig();
+  const ghToken = cfg.token;
+  const targetUrl = file.externalUrl || (file.filePath && (file.filePath.startsWith('http://') || file.filePath.startsWith('https://')) ? file.filePath : null);
+
+  if (!targetUrl && !file.githubAssetId) {
+    return false;
+  }
+
+  const mimeType = file.mimeType || 'application/octet-stream';
+  const rawDisplayName = (req.query?.name as string) || file.originalName || file.filename || 'download_asset';
+  const safeDisplayName = rawDisplayName.replace(/["\r\n\/\\]/g, '_');
+  const encodedDisplayName = encodeURIComponent(rawDisplayName);
+
+  const resHeaders: Record<string, any> = {
+    'Content-Type': mimeType,
+    'Content-Disposition': `attachment; filename="${safeDisplayName}"; filename*=UTF-8''${encodedDisplayName}`,
+    'X-Content-Type-Options': 'nosniff',
+  };
+
+  const pipeWebStreamToRes = async (remoteRes: Response, status = 200) => {
+    const contentLength = remoteRes.headers.get('content-length');
+    if (contentLength) {
+      resHeaders['Content-Length'] = contentLength;
+    }
+    const contentRange = remoteRes.headers.get('content-range');
+    if (contentRange) {
+      resHeaders['Content-Range'] = contentRange;
+      resHeaders['Accept-Ranges'] = 'bytes';
+      res.writeHead(206, resHeaders);
+    } else {
+      res.writeHead(status, resHeaders);
+    }
+    const { Readable } = await import('stream');
+    Readable.fromWeb(remoteRes.body as any).pipe(res);
+  };
+
+  // Strategy 1: If githubAssetId is available and repo is configured
+  if (file.githubAssetId && cfg.owner && cfg.repoName && ghToken) {
+    try {
+      const assetApiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repoName}/releases/assets/${file.githubAssetId}`;
+      const apiRes = await fetch(assetApiUrl, {
+        headers: {
+          'Authorization': `Bearer ${ghToken}`,
+          'User-Agent': 'FileDock-App',
+          'Accept': 'application/octet-stream',
+        },
+        redirect: 'manual',
+      });
+
+      if (apiRes.status === 302 || apiRes.status === 301 || apiRes.status === 307) {
+        const redirectUrl = apiRes.headers.get('location');
+        if (redirectUrl) {
+          // Fetch S3 URL WITHOUT Authorization header
+          const s3Res = await fetch(redirectUrl);
+          if (s3Res.ok && s3Res.body) {
+            await pipeWebStreamToRes(s3Res);
+            return true;
+          }
+        }
+      } else if (apiRes.ok && apiRes.body) {
+        await pipeWebStreamToRes(apiRes);
+        return true;
+      }
+    } catch (err) {
+      console.error('GitHub Asset API stream error:', err);
+    }
+  }
+
+  // Strategy 2: Download from targetUrl (e.g. browser_download_url or direct release URL)
+  if (targetUrl) {
+    try {
+      // A. Try direct public fetch with manual redirect handling
+      let remoteRes = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+        redirect: 'manual',
+      });
+
+      if (remoteRes.status === 302 || remoteRes.status === 301 || remoteRes.status === 307) {
+        const redirUrl = remoteRes.headers.get('location');
+        if (redirUrl) {
+          const finalRes = await fetch(redirUrl);
+          if (finalRes.ok && finalRes.body) {
+            await pipeWebStreamToRes(finalRes);
+            return true;
+          }
+        }
+      } else if (remoteRes.ok && remoteRes.body) {
+        await pipeWebStreamToRes(remoteRes);
+        return true;
+      }
+
+      // B. If public fetch failed (e.g. private repo release), use ghToken with redirect: manual
+      if (ghToken && targetUrl.includes('github')) {
+        const authRes = await fetch(targetUrl, {
+          headers: {
+            'Authorization': `Bearer ${ghToken}`,
+            'User-Agent': 'FileDock-App',
+          },
+          redirect: 'manual',
+        });
+
+        if (authRes.status === 302 || authRes.status === 301 || authRes.status === 307) {
+          const redirUrl = authRes.headers.get('location');
+          if (redirUrl) {
+            // Fetch redirected S3 URL WITHOUT Auth header
+            const finalRes = await fetch(redirUrl);
+            if (finalRes.ok && finalRes.body) {
+              await pipeWebStreamToRes(finalRes);
+              return true;
+            }
+          }
+        } else if (authRes.ok && authRes.body) {
+          await pipeWebStreamToRes(authRes);
+          return true;
+        }
+      }
+    } catch (err) {
+      console.error('GitHub targetUrl stream error:', err);
+    }
+  }
+
+  return false;
+}

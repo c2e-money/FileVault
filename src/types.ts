@@ -36,6 +36,7 @@ export interface FileItem {
   driveFileId?: string;
   driveViewUrl?: string;
   driveDownloadUrl?: string;
+  githubAssetId?: number;
   externalUrl?: string;
   ratingAvg: number;
   ratingCount: number;
