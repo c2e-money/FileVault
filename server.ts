@@ -1022,7 +1022,9 @@ async function handleFileDownloadStream(idOrFilename: string, req: AuthRequest, 
   if (file) {
     if (file.isPasswordProtected) {
       const pwd = (req.query.password as string) || req.headers['x-file-password'];
-      if (pwd !== file.password) {
+      const storedPwd = String(file.password || '').trim();
+      const inputPwd = String(pwd || '').trim();
+      if (storedPwd && storedPwd !== inputPwd) {
         return res.status(403).setHeader('Content-Type', 'text/plain').send('Password required to download this file');
       }
     }
@@ -1272,7 +1274,7 @@ app.put('/api/files/:id/edit', (req: AuthRequest, res) => {
     file.tags = Array.isArray(tags) ? tags : tags.split(',').map((t: string) => t.trim()).filter(Boolean);
   }
   if (isPasswordProtected !== undefined) file.isPasswordProtected = !!isPasswordProtected;
-  if (password !== undefined) file.password = password;
+  if (password !== undefined && (password !== '' || !file.isPasswordProtected)) file.password = password;
   if (isDraft !== undefined) file.isDraft = !!isDraft;
   if (isFeatured !== undefined) file.isFeatured = !!isFeatured;
   if (scheduledAt !== undefined) file.scheduledAt = scheduledAt ? new Date(scheduledAt).toISOString() : null;
@@ -1435,10 +1437,11 @@ app.delete('/api/files/:id', async (req: AuthRequest, res) => {
 });
 
 // Validate File Password
-app.post('/api/files/:id/check-password', (req, res) => {
+app.post('/api/files/:id/check-password', async (req, res) => {
   const { password } = req.body;
   const database = db.getDb();
-  const file = database.files.find(f => f.id === req.params.id);
+  const qFilename = (req.query.filename as string) || (req.body.filename as string);
+  const file = await findOrFetchFile(database, req.params.id, qFilename);
 
   if (!file) {
     return res.status(404).json({ error: 'File not found' });
@@ -1448,7 +1451,10 @@ app.post('/api/files/:id/check-password', (req, res) => {
     return res.json({ valid: true });
   }
 
-  if (file.password === password) {
+  const storedPwd = String(file.password || '').trim();
+  const inputPwd = String(password || '').trim();
+
+  if (!storedPwd || storedPwd === inputPwd) {
     return res.json({ valid: true });
   } else {
     return res.status(401).json({ valid: false, error: 'Incorrect file password' });

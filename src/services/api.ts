@@ -993,12 +993,34 @@ export const api = {
       throw new Error('Permission denied. You can only edit your own files.');
     }
 
+    const cleanUpdates = { ...updates };
+    if (cleanUpdates.isPasswordProtected && (!cleanUpdates.password || !cleanUpdates.password.trim())) {
+      if (existingData.password) {
+        cleanUpdates.password = existingData.password;
+      }
+    }
+
     const payload = {
-      ...updates,
+      ...cleanUpdates,
       updatedAt: new Date().toISOString(),
     };
 
     await updateDoc(fileRef, payload);
+
+    try {
+      await fetch(`/api/files/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-uid': currentUid || 'usr-guest',
+          'x-is-admin': isAdmin ? 'true' : 'false',
+        },
+        body: JSON.stringify(cleanUpdates),
+      });
+    } catch (e) {
+      console.warn('Express file edit sync note:', e);
+    }
+
     return this.getFileById(id);
   },
 
@@ -1145,9 +1167,51 @@ export const api = {
   },
 
   async verifyPassword(id: string, password: string): Promise<boolean> {
-    const file = await this.getFileById(id);
-    if (!file.isPasswordProtected) return true;
-    return file.password === password;
+    const cleanInput = id ? decodeURIComponent(id.split('?')[0].split('#')[0]) : '';
+    const trimmedInputPass = (password || '').trim();
+
+    // 1. Try server verification API endpoint first
+    try {
+      const res = await fetch(`/api/files/${encodeURIComponent(cleanInput)}/check-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: trimmedInputPass }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return Boolean(data.valid);
+      } else if (res.status === 401) {
+        return false;
+      }
+    } catch (e) {
+      console.warn('Server check-password endpoint failed, trying fallback:', e);
+    }
+
+    // 2. Direct Firestore fallback
+    try {
+      const dashParts = cleanInput.split('-');
+      const firstDash = dashParts[0] || cleanInput;
+      const lastDash = dashParts[dashParts.length - 1] || cleanInput;
+
+      let docSnap = await getDoc(doc(db, 'files', cleanInput)).catch(() => null);
+      if (!docSnap || !docSnap.exists()) {
+        docSnap = await getDoc(doc(db, 'files', firstDash)).catch(() => null);
+      }
+      if (!docSnap || !docSnap.exists()) {
+        docSnap = await getDoc(doc(db, 'files', lastDash)).catch(() => null);
+      }
+
+      if (docSnap && docSnap.exists()) {
+        const data = docSnap.data();
+        if (!data.isPasswordProtected) return true;
+        const storedPwd = String(data.password || '').trim();
+        return storedPwd === trimmedInputPass;
+      }
+    } catch (err) {
+      console.warn('Firestore password verify fallback error:', err);
+    }
+
+    return false;
   },
 
   getDownloadUrl(id: string, password?: string): string {
