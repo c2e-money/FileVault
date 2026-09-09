@@ -21,8 +21,16 @@ export const AdminSettingsManager: React.FC = () => {
         await api.updateSettings(settings);
       }
       const res = await fetch('/api/admin/drive-status');
-      const data = await res.json();
-      setDriveStatus(data);
+      const text = await res.text();
+      let data: any = null;
+      if (text && text.trim().startsWith('{')) {
+        data = JSON.parse(text);
+      }
+      if (data) {
+        setDriveStatus(data);
+      } else {
+        setDriveStatus({ status: 'ERROR', error: 'Server endpoint returned non-JSON response.' });
+      }
     } catch (err: any) {
       setDriveStatus({ status: 'ERROR', error: err.message || 'Failed to reach server' });
     } finally {
@@ -35,25 +43,83 @@ export const AdminSettingsManager: React.FC = () => {
     setGithubStatus(null);
     try {
       if (settings) {
-        await api.updateSettings(settings);
+        await api.updateSettings(settings).catch(() => null);
       }
       const adminToken = localStorage.getItem('filevault_admin_token') || localStorage.getItem('filevault_token') || '';
-      const res = await fetch('/api/admin/github-status', {
-        method: 'POST',
+      let data: any = null;
+
+      try {
+        const res = await fetch('/api/admin/github-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}),
+          },
+          body: JSON.stringify({
+            githubToken: settings?.githubToken || '',
+            githubRepo: settings?.githubRepo || '',
+            githubTag: settings?.githubTag || 'uploads',
+          }),
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.trim().startsWith('{')) {
+            data = JSON.parse(text);
+          }
+        }
+      } catch {
+        // Endpoint unavailable (e.g. static hosting on Vercel)
+        data = null;
+      }
+
+      // If server responded successfully with status, use it
+      if (data && data.status) {
+        setGithubStatus(data);
+        return;
+      }
+
+      // Fallback: Verify directly with GitHub REST API from client
+      const token = (settings?.githubToken || '').trim();
+      const repo = (settings?.githubRepo || '').trim();
+      const tag = (settings?.githubTag || 'uploads').trim();
+
+      if (!token) {
+        setGithubStatus({ status: 'ERROR', error: 'GitHub Personal Access Token (PAT) is missing.' });
+        return;
+      }
+      if (!repo || !repo.includes('/')) {
+        setGithubStatus({ status: 'ERROR', error: 'GitHub Repository format must be owner/repo (e.g. c2e-money/LG-FILES).' });
+        return;
+      }
+
+      const [owner, repoName] = repo.split('/').map((s) => s.trim());
+      const ghRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, {
         headers: {
-          'Content-Type': 'application/json',
-          ...(adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}),
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
         },
-        body: JSON.stringify({
-          githubToken: settings?.githubToken || '',
-          githubRepo: settings?.githubRepo || '',
-          githubTag: settings?.githubTag || 'uploads',
-        }),
       });
-      const data = await res.json();
-      setGithubStatus(data);
+
+      if (ghRes.ok) {
+        const repoData = await ghRes.json();
+        setGithubStatus({
+          status: 'CONNECTED',
+          repo: repoData.full_name,
+          message: `Successfully connected to repository ${repoData.full_name}! Release tag '${tag}' ready for storage.`,
+        });
+      } else {
+        const ghErr = await ghRes.json().catch(() => ({}));
+        let errMsg = `GitHub API error (${ghRes.status}): ${ghErr.message || ghRes.statusText}`;
+        if (ghRes.status === 401) {
+          errMsg = 'Invalid or expired GitHub Token. Please check token permissions (must have "repo" scope).';
+        } else if (ghRes.status === 404) {
+          errMsg = `Repository "${repo}" not found or token lacks access permission. Verify repository name and permissions.`;
+        }
+        setGithubStatus({ status: 'ERROR', error: errMsg });
+      }
     } catch (err: any) {
-      setGithubStatus({ status: 'ERROR', error: err.message || 'Failed to reach server' });
+      setGithubStatus({ status: 'ERROR', error: err.message || 'Failed to verify GitHub connection.' });
     } finally {
       setGithubTesting(false);
     }
