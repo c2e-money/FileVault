@@ -44,23 +44,63 @@ const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
 
 const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
   {
-    title: 'High-Speed Cloud VPS Servers',
+    title: 'Banner (468x60)',
     type: 'banner',
-    code: '<div class="ad-vps">High-Speed Cloud Servers</div>',
-    location: 'home_top',
+    code: `<script>
+  atOptions = {
+    'key' : 'ee10c1adfd8e4c809977c789344ef27e',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
+  };
+</script>
+<script src="https://rightyrely.com/ee10c1adfd8e4c809977c789344ef27e/invoke.js"></script>`,
+    location: 'download_page_top',
     isEnabled: true,
-    clicks: 12,
-    impressions: 450,
+    clicks: 0,
+    impressions: 0,
     createdAt: new Date().toISOString(),
   },
   {
-    title: 'Secure File Encryption Tool',
+    title: 'Native Banner',
     type: 'native',
-    code: '<div class="ad-encrypt">Zero-Knowledge File Encryption</div>',
-    location: 'download_page_top',
+    code: `<script async="async" data-cfasync="false" src="https://rightyrely.com/326d0f3c66706f8159c1008ea05e137d/invoke.js"></script>
+<div id="container-326d0f3c66706f8159c1008ea05e137d"></div>`,
+    location: 'download_page_middle',
     isEnabled: true,
-    clicks: 8,
-    impressions: 310,
+    clicks: 0,
+    impressions: 0,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    title: 'Popunder Ad',
+    type: 'popunder',
+    code: '<script src="https://rightyrely.com/85/10/84/851084f745dc8bcc34fc5c5a02b47b70.js"></script>',
+    location: 'download_page',
+    isEnabled: true,
+    clicks: 0,
+    impressions: 0,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    title: 'Smart Link Direct',
+    type: 'smartlink',
+    code: 'https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d',
+    location: 'download_button',
+    isEnabled: true,
+    clicks: 0,
+    impressions: 0,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    title: 'Social Bar Ad',
+    type: 'socialbar',
+    code: '<script src="https://rightyrely.com/39/ec/5a/39ec5a182d9f0d10844597ce52e66aca.js"></script>',
+    location: 'download_page',
+    isEnabled: true,
+    clicks: 0,
+    impressions: 0,
     createdAt: new Date().toISOString(),
   },
 ];

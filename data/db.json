@@ -20,7 +20,7 @@
     }
   ],
   "passwords": {
-    "usr-admin-1": "$2b$10$.Y.DLJ3POQLYi1gmOayqzOh9qGz4l5KOPvs4g8iE68.TDnnVP4bgy",
+    "usr-admin-1": "$2b$10$cZeyzI44RTyHhUTVh9dSburNM6uKyxfQyqBAwvD0MkH3O8bxhhkZa",
     "usr-regular-1": "$2b$10$iJe.J7SezHF4l87ojsJ9oueFctsSQuEIXmANgP42gTYZs2oB.7sTm"
   },
   "files": [
@@ -248,7 +248,7 @@
       "id": "ad-popunder-main",
       "title": "Main Download Popunder Ad",
       "type": "popunder",
-      "code": "<script src=\"https://rightyrely.com/53/92/fc/5392fcc75419f61c91e6f8fe414638f9.js\"></script>",
+      "code": "<script src=\"https://rightyrely.com/85/10/84/851084f745dc8bcc34fc5c5a02b47b70.js\"></script>",
       "location": "download_page",
       "isEnabled": true,
       "clicks": 0,
@@ -259,7 +259,7 @@
       "id": "ad-socialbar-main",
       "title": "Social Bar Ad",
       "type": "socialbar",
-      "code": "<script src=\"https://rightyrely.com/ae/f4/a1/aef4a178cbd7000a43b9c0e73aba7fad.js\"></script>",
+      "code": "<script src=\"https://rightyrely.com/39/ec/5a/39ec5a182d9f0d10844597ce52e66aca.js\"></script>",
       "location": "download_page",
       "isEnabled": true,
       "clicks": 0,
@@ -270,7 +270,7 @@
       "id": "ad-smartlink-direct",
       "title": "High Speed Smart Link Direct",
       "type": "smartlink",
-      "code": "https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a",
+      "code": "https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d",
       "location": "download_button",
       "isEnabled": true,
       "clicks": 0,
@@ -281,7 +281,7 @@
       "id": "ad-banner-468x60",
       "title": "Download Page Banner (468x60)",
       "type": "banner",
-      "code": "<script>\n  atOptions = {\n    'key' : '6ae81df28c5e141bffdad2683ec8da66',\n    'format' : 'iframe',\n    'height' : 60,\n    'width' : 468,\n    'params' : {}\n  };\n</script>\n<script src=\"https://rightyrely.com/6ae81df28c5e141bffdad2683ec8da66/invoke.js\"></script>",
+      "code": "<script>\n  atOptions = {\n    'key' : 'ee10c1adfd8e4c809977c789344ef27e',\n    'format' : 'iframe',\n    'height' : 60,\n    'width' : 468,\n    'params' : {}\n  };\n</script>\n<script src=\"https://rightyrely.com/ee10c1adfd8e4c809977c789344ef27e/invoke.js\"></script>",
       "location": "download_page_top",
       "isEnabled": true,
       "clicks": 0,
@@ -292,7 +292,7 @@
       "id": "ad-native-main",
       "title": "Download Page Native Banner",
       "type": "native",
-      "code": "<script async=\"async\" data-cfasync=\"false\" src=\"https://rightyrely.com/c9a50f399d991fbd28e09f98504f9cfa/invoke.js\"></script>\n<div id=\"container-c9a50f399d991fbd28e09f98504f9cfa\"></div>",
+      "code": "<script async=\"async\" data-cfasync=\"false\" src=\"https://rightyrely.com/326d0f3c66706f8159c1008ea05e137d/invoke.js\"></script>\n<div id=\"container-326d0f3c66706f8159c1008ea05e137d\"></div>",
       "location": "download_page_middle",
       "isEnabled": true,
       "clicks": 0,

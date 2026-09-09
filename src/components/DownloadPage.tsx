@@ -155,7 +155,7 @@ export const DownloadPage: React.FC<DownloadPageProps> = ({
     const targetUrl =
       smartLinkAd && smartLinkAd.isEnabled && smartLinkAd.code?.trim()
         ? smartLinkAd.code.trim()
-        : 'https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a';
+        : 'https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d';
 
     if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://') || targetUrl.startsWith('//')) {
       smartLinkOpenedRef.current = true;
