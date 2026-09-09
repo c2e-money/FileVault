@@ -32,6 +32,27 @@ import {
   getShareableDownloadUrl,
 } from '../types.js';
 
+let cachedBackendApiUrl = '';
+
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('filevault_backend_url');
+    if (local && (local.startsWith('http://') || local.startsWith('https://'))) {
+      return local.replace(/\/+$/, '');
+    }
+    if (cachedBackendApiUrl && (cachedBackendApiUrl.startsWith('http://') || cachedBackendApiUrl.startsWith('https://'))) {
+      return cachedBackendApiUrl.replace(/\/+$/, '');
+    }
+  }
+  return '';
+}
+
+export function apiUrl(endpoint: string): string {
+  const base = getApiBaseUrl();
+  const clean = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return base ? `${base}${clean}` : clean;
+}
+
 const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Software & Apps', slug: 'software-apps', description: 'Installers, utilities, and applications', icon: 'Code', fileCount: 0, createdAt: new Date().toISOString() },
   { name: 'Documents & PDFs', slug: 'documents-pdfs', description: 'PDFs, DOCX, TXT, and spreadsheets', icon: 'FileText', fileCount: 0, createdAt: new Date().toISOString() },
@@ -850,6 +871,10 @@ export const api = {
           } catch {
             reject(new Error(`Server response error (${xhr.status}): ${xhr.responseText ? xhr.responseText.substring(0, 100) : 'Empty response'}`));
           }
+        } else if (xhr.status === 405) {
+          reject(new Error(
+            'Upload failed (HTTP 405 Method Not Allowed): Vercel static hosting par backend server nahi chalta. Kripya Admin Settings me Backend Server API URL set karein ya full-stack hosting (jaise Render/Cloud Run) par run karein.'
+          ));
         } else {
           try {
             const errData = JSON.parse(xhr.responseText);
@@ -870,7 +895,7 @@ export const api = {
         reject(abortErr);
       };
 
-      xhr.open('POST', '/api/files/upload');
+      xhr.open('POST', apiUrl('/api/files/upload'));
       if (activeUid && activeUid !== 'guest') {
         xhr.setRequestHeader('x-user-uid', activeUid);
       }
@@ -1833,7 +1858,14 @@ export const api = {
   async getSettings(): Promise<WebsiteSettings> {
     const snap = await getDoc(doc(db, 'settings', 'global'));
     if (snap.exists()) {
-      return snap.data() as WebsiteSettings;
+      const data = snap.data() as WebsiteSettings;
+      if (data.backendApiUrl) {
+        cachedBackendApiUrl = data.backendApiUrl.trim();
+        try {
+          localStorage.setItem('filevault_backend_url', data.backendApiUrl.trim());
+        } catch {}
+      }
+      return data;
     }
     const defaults: WebsiteSettings = {
       siteName: 'FileDock',
@@ -1859,9 +1891,20 @@ export const api = {
   },
 
   async updateSettings(settings: Partial<WebsiteSettings>): Promise<WebsiteSettings> {
+    if (settings.backendApiUrl !== undefined) {
+      cachedBackendApiUrl = (settings.backendApiUrl || '').trim();
+      try {
+        if (cachedBackendApiUrl) {
+          localStorage.setItem('filevault_backend_url', cachedBackendApiUrl);
+        } else {
+          localStorage.removeItem('filevault_backend_url');
+        }
+      } catch {}
+    }
+
     const adminToken = localStorage.getItem('filevault_admin_token') || localStorage.getItem('filevault_token');
     try {
-      await fetch('/api/admin/settings', {
+      await fetch(apiUrl('/api/admin/settings'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

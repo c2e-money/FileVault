@@ -33,6 +33,18 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 const app = express();
+
+// Enable CORS for external frontends (e.g. Vercel, custom domains)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-user-uid, x-visitor-id');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 

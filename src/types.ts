@@ -156,6 +156,7 @@ export interface WebsiteSettings {
   githubToken?: string;
   githubRepo?: string;
   githubTag?: string;
+  backendApiUrl?: string;
 }
 
 export interface ActivityLog {

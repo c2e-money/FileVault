@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Save, HardDrive, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import { Settings, Save, HardDrive, ShieldAlert, CheckCircle, Clock, Globe } from 'lucide-react';
 import { WebsiteSettings } from '../../types.js';
-import { api } from '../../services/api.js';
+import { api, apiUrl } from '../../services/api.js';
 
 export const AdminSettingsManager: React.FC = () => {
   const [settings, setSettings] = useState<WebsiteSettings | null>(null);
@@ -20,7 +20,7 @@ export const AdminSettingsManager: React.FC = () => {
       if (settings) {
         await api.updateSettings(settings);
       }
-      const res = await fetch('/api/admin/drive-status');
+      const res = await fetch(apiUrl('/api/admin/drive-status'));
       const text = await res.text();
       let data: any = null;
       if (text && text.trim().startsWith('{')) {
@@ -49,7 +49,7 @@ export const AdminSettingsManager: React.FC = () => {
       let data: any = null;
 
       try {
-        const res = await fetch('/api/admin/github-status', {
+        const res = await fetch(apiUrl('/api/admin/github-status'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -210,6 +210,27 @@ export const AdminSettingsManager: React.FC = () => {
               className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-100"
             />
           </div>
+
+          {/* Backend Server API URL for Vercel / Static Deployments */}
+          <div className="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-blue-400" />
+                Backend Server API URL (For Vercel Deployments)
+              </label>
+              <span className="text-[10px] text-zinc-500 font-mono">Solves 405 error</span>
+            </div>
+            <input
+              type="url"
+              placeholder="e.g. https://ais-dev-rsgrk3ov55hgz4c74xig2y-625250468546.asia-southeast1.run.app or Render URL"
+              value={settings.backendApiUrl || ''}
+              onChange={(e) => setSettings({ ...settings, backendApiUrl: e.target.value })}
+              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-blue-300 font-mono placeholder:text-zinc-600"
+            />
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              💡 <strong>Vercel Hosting Note:</strong> Vercel static frontends do not run Node.js Express servers, causing <code className="text-rose-400">405 No detail</code> on uploads. Enter your live backend URL (Cloud Run or Render) here so file uploads route to the backend server.
+            </p>
+          </div>
         </div>
 
         {/* Support & Community Links (WhatsApp / Telegram) */}
@@ -366,6 +387,27 @@ export const AdminSettingsManager: React.FC = () => {
                         className="w-full px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-200 font-mono"
                       />
                     </div>
+                  </div>
+
+                  {/* Backend Server API URL specifically for Vercel / Remote Frontends */}
+                  <div className="pt-1.5 border-t border-zinc-800/80">
+                    <label className="block text-[11px] font-medium text-zinc-300 mb-0.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-blue-400 font-semibold">
+                        <Globe className="w-3.5 h-3.5 text-blue-400" />
+                        Backend Server API URL (Required for Vercel Deployments)
+                      </span>
+                      <span className="text-[10px] text-zinc-500 font-mono">Fixes 405 error</span>
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://ais-dev-rsgrk3ov55hgz4c74xig2y-625250468546.asia-southeast1.run.app"
+                      value={settings.backendApiUrl || ''}
+                      onChange={(e) => setSettings({ ...settings, backendApiUrl: e.target.value })}
+                      className="w-full px-2.5 py-1.5 bg-zinc-900 border border-blue-500/30 rounded-lg text-xs text-blue-300 font-mono"
+                    />
+                    <p className="text-[10px] text-zinc-400 mt-1 leading-normal">
+                      ⚡ <strong>Vercel par 405 error hatane ke liye:</strong> Isme Google Cloud Run backend link daal kar <strong>Save Settings</strong> karein. Default: <code className="text-blue-300 select-all">https://ais-dev-rsgrk3ov55hgz4c74xig2y-625250468546.asia-southeast1.run.app</code>
+                    </p>
                   </div>
                 </div>
 

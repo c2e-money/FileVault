@@ -4,6 +4,10 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://ais-dev-rsgrk3ov55hgz4c74xig2y-625250468546.asia-southeast1.run.app/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
