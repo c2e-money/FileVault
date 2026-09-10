@@ -339,36 +339,8 @@ export async function streamGitHubFileAsset(file: any, req: any, res: any): Prom
     return false;
   }
 
-  const mimeType = file.mimeType || 'application/octet-stream';
-  const rawDisplayName = (req.query?.name as string) || file.originalName || file.filename || 'download_asset';
-  const safeDisplayName = rawDisplayName.replace(/["\r\n\/\\]/g, '_');
-  const encodedDisplayName = encodeURIComponent(rawDisplayName);
-
-  const resHeaders: Record<string, any> = {
-    'Content-Type': mimeType,
-    'Content-Disposition': `attachment; filename="${safeDisplayName}"; filename*=UTF-8''${encodedDisplayName}`,
-    'X-Content-Type-Options': 'nosniff',
-  };
-
-  const pipeResponseBufferToRes = async (remoteRes: Response) => {
-    const contentLength = remoteRes.headers.get('content-length');
-    if (contentLength) {
-      resHeaders['Content-Length'] = contentLength;
-    }
-    const contentRange = remoteRes.headers.get('content-range');
-    if (contentRange) {
-      resHeaders['Content-Range'] = contentRange;
-      resHeaders['Accept-Ranges'] = 'bytes';
-      res.writeHead(206, resHeaders);
-    } else {
-      res.writeHead(200, resHeaders);
-    }
-    const arrayBuf = await remoteRes.arrayBuffer();
-    const buffer = Buffer.from(arrayBuf);
-    res.end(buffer);
-  };
-
   // Strategy 1: Asset API if assetId and token/repo are available
+  // Resolves direct GitHub CDN download URL and redirects (0 server bandwidth used!)
   if (file.githubAssetId && cfg.owner && cfg.repoName && ghToken) {
     try {
       const assetApiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repoName}/releases/assets/${file.githubAssetId}`;
@@ -384,40 +356,23 @@ export async function streamGitHubFileAsset(file: any, req: any, res: any): Prom
       if (apiRes.status === 302 || apiRes.status === 301 || apiRes.status === 307) {
         const redirectUrl = apiRes.headers.get('location');
         if (redirectUrl) {
-          const s3Res = await fetch(redirectUrl);
-          if (s3Res.ok) {
-            await pipeResponseBufferToRes(s3Res);
-            return true;
-          }
+          // Direct redirect to GitHub CDN — user downloads directly from GitHub Fastly/S3
+          res.redirect(302, redirectUrl);
+          return true;
         }
-      } else if (apiRes.ok) {
-        await pipeResponseBufferToRes(apiRes);
-        return true;
       }
     } catch (err) {
       console.error('GitHub Asset API stream error:', err);
     }
   }
 
-  // Strategy 2: Direct public fetch with redirect follow (for public release assets)
+  // Strategy 2: If targetUrl is public GitHub releases download URL, redirect directly
   if (targetUrl) {
-    try {
-      const publicRes = await fetch(targetUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-        redirect: 'follow',
-      });
-
-      if (publicRes.ok) {
-        await pipeResponseBufferToRes(publicRes);
-        return true;
-      }
-    } catch (err) {
-      console.error('GitHub public targetUrl stream error:', err);
+    if (targetUrl.includes('github.com') && targetUrl.includes('/releases/download/')) {
+      res.redirect(302, targetUrl);
+      return true;
     }
 
-    // Strategy 3: Authenticated fetch with manual redirect (for private repo release assets)
     if (ghToken && targetUrl.includes('github')) {
       try {
         const authRes = await fetch(targetUrl, {
@@ -431,20 +386,17 @@ export async function streamGitHubFileAsset(file: any, req: any, res: any): Prom
         if (authRes.status === 302 || authRes.status === 301 || authRes.status === 307) {
           const redirUrl = authRes.headers.get('location');
           if (redirUrl) {
-            const finalRes = await fetch(redirUrl);
-            if (finalRes.ok) {
-              await pipeResponseBufferToRes(finalRes);
-              return true;
-            }
+            res.redirect(302, redirUrl);
+            return true;
           }
-        } else if (authRes.ok) {
-          await pipeResponseBufferToRes(authRes);
-          return true;
         }
       } catch (err) {
-        console.error('GitHub auth targetUrl stream error:', err);
+        console.error('GitHub auth targetUrl redirect error:', err);
       }
     }
+
+    res.redirect(302, targetUrl);
+    return true;
   }
 
   return false;
