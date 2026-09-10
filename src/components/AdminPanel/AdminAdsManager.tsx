@@ -54,37 +54,37 @@ export const AdminAdsManager: React.FC<AdminAdsManagerProps> = ({ ads, onRefresh
       setLocation('download_page_top');
       setCode(`<script>
   atOptions = {
-    'key' : 'ee10c1adfd8e4c809977c789344ef27e',
+    'key' : '6ae81df28c5e141bffdad2683ec8da66',
     'format' : 'iframe',
     'height' : 60,
     'width' : 468,
     'params' : {}
   };
 </script>
-<script src="https://rightyrely.com/ee10c1adfd8e4c809977c789344ef27e/invoke.js"></script>`);
+<script src="https://rightyrely.com/6ae81df28c5e141bffdad2683ec8da66/invoke.js"></script>`);
     } else if (templateType === 'popunder') {
       setTitle('Popunder Script');
       setLocation('download_page');
-      setCode('<script src="https://rightyrely.com/85/10/84/851084f745dc8bcc34fc5c5a02b47b70.js"></script>');
+      setCode('<script src="https://rightyrely.com/53/92/fc/5392fcc75419f61c91e6f8fe414638f9.js"></script>');
     } else if (templateType === 'socialbar') {
       setTitle('Social Bar Unit');
       setLocation('download_page');
-      setCode('<script src="https://rightyrely.com/39/ec/5a/39ec5a182d9f0d10844597ce52e66aca.js"></script>');
+      setCode('<script src="https://rightyrely.com/ae/f4/a1/aef4a178cbd7000a43b9c0e73aba7fad.js"></script>');
     } else if (templateType === 'smartlink') {
       setTitle('Smart Link Direct URL');
       setLocation('download_button');
-      setCode('https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d');
+      setCode('https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a');
     } else if (templateType === 'native') {
       setTitle('Native Banner Unit');
       setLocation('download_page_middle');
-      setCode(`<script async="async" data-cfasync="false" src="https://rightyrely.com/326d0f3c66706f8159c1008ea05e137d/invoke.js"></script>
-<div id="container-326d0f3c66706f8159c1008ea05e137d"></div>`);
+      setCode(`<script async="async" data-cfasync="false" src="https://rightyrely.com/c9a50f399d991fbd28e09f98504f9cfa/invoke.js"></script>
+<div id="container-c9a50f399d991fbd28e09f98504f9cfa"></div>`);
     } else if (templateType === 'sticky') {
       setTitle('Sticky Footer Smart Link Banner');
       setLocation('global_sticky_bottom');
       setCode(`<div class="p-2 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-between text-xs text-zinc-200">
   <span>⚡ <strong>High-Speed Cloud Mirror:</strong> Premium Resume Storage Node</span>
-  <a href="https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d" target="_blank" class="px-3 py-1 bg-amber-500 text-zinc-950 font-bold rounded-lg">Download Mirror</a>
+  <a href="https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a" target="_blank" class="px-3 py-1 bg-amber-500 text-zinc-950 font-bold rounded-lg">Download Mirror</a>
 </div>`);
     }
   };
