@@ -38,10 +38,16 @@ export function getApiBaseUrl(): string {
   if (typeof window !== 'undefined') {
     const local = localStorage.getItem('filevault_backend_url');
     if (local && (local.startsWith('http://') || local.startsWith('https://'))) {
-      return local.replace(/\/+$/, '');
+      const trimmed = local.replace(/\/+$/, '');
+      if (trimmed !== window.location.origin) {
+        return trimmed;
+      }
     }
     if (cachedBackendApiUrl && (cachedBackendApiUrl.startsWith('http://') || cachedBackendApiUrl.startsWith('https://'))) {
-      return cachedBackendApiUrl.replace(/\/+$/, '');
+      const trimmed = cachedBackendApiUrl.replace(/\/+$/, '');
+      if (trimmed !== window.location.origin) {
+        return trimmed;
+      }
     }
   }
   return '';
@@ -69,14 +75,14 @@ const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
     type: 'banner',
     code: `<script>
   atOptions = {
-    'key' : 'ee10c1adfd8e4c809977c789344ef27e',
+    'key' : '6ae81df28c5e141bffdad2683ec8da66',
     'format' : 'iframe',
     'height' : 60,
     'width' : 468,
     'params' : {}
   };
 </script>
-<script src="https://rightyrely.com/ee10c1adfd8e4c809977c789344ef27e/invoke.js"></script>`,
+<script src="https://rightyrely.com/6ae81df28c5e141bffdad2683ec8da66/invoke.js"></script>`,
     location: 'download_page_top',
     isEnabled: true,
     clicks: 0,
@@ -86,8 +92,8 @@ const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
   {
     title: 'Native Banner',
     type: 'native',
-    code: `<script async="async" data-cfasync="false" src="https://rightyrely.com/326d0f3c66706f8159c1008ea05e137d/invoke.js"></script>
-<div id="container-326d0f3c66706f8159c1008ea05e137d"></div>`,
+    code: `<script async="async" data-cfasync="false" src="https://rightyrely.com/c9a50f399d991fbd28e09f98504f9cfa/invoke.js"></script>
+<div id="container-c9a50f399d991fbd28e09f98504f9cfa"></div>`,
     location: 'download_page_middle',
     isEnabled: true,
     clicks: 0,
@@ -97,7 +103,7 @@ const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
   {
     title: 'Popunder Ad',
     type: 'popunder',
-    code: '<script src="https://rightyrely.com/85/10/84/851084f745dc8bcc34fc5c5a02b47b70.js"></script>',
+    code: '<script src="https://rightyrely.com/53/92/fc/5392fcc75419f61c91e6f8fe414638f9.js"></script>',
     location: 'download_page',
     isEnabled: true,
     clicks: 0,
@@ -107,7 +113,7 @@ const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
   {
     title: 'Smart Link Direct',
     type: 'smartlink',
-    code: 'https://rightyrely.com/fak9m43i14?key=73f5ec0985cef0073e7db005b15f296d',
+    code: 'https://rightyrely.com/nvxev2d8m9?key=357f2a0b3b6161edd40942cc022bbe8a',
     location: 'download_button',
     isEnabled: true,
     clicks: 0,
@@ -117,7 +123,7 @@ const DEFAULT_ADS: Omit<Advertisement, 'id'>[] = [
   {
     title: 'Social Bar Ad',
     type: 'socialbar',
-    code: '<script src="https://rightyrely.com/39/ec/5a/39ec5a182d9f0d10844597ce52e66aca.js"></script>',
+    code: '<script src="https://rightyrely.com/ae/f4/a1/aef4a178cbd7000a43b9c0e73aba7fad.js"></script>',
     location: 'download_page',
     isEnabled: true,
     clicks: 0,
@@ -886,7 +892,12 @@ export const api = {
       };
 
       xhr.onerror = () => {
-        reject(new Error('Network error during file upload'));
+        const isExternal = typeof window !== 'undefined' && Boolean(getApiBaseUrl());
+        if (isExternal) {
+          reject(new Error('Network error (CORS Blocked): External backend server ne cross-origin request block kar di. Kripya app ko direct Cloud Run/Render app link par open karke upload karein.'));
+        } else {
+          reject(new Error('Network error during file upload: Server connect nahi ho saka.'));
+        }
       };
 
       xhr.onabort = () => {
@@ -1955,3 +1966,4 @@ export const api = {
     return { id: snap.id, ...(snap.data() as Omit<Report, 'id'>) };
   },
 };
+*
