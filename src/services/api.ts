@@ -1966,4 +1966,3 @@ export const api = {
     return { id: snap.id, ...(snap.data() as Omit<Report, 'id'>) };
   },
 };
-*
